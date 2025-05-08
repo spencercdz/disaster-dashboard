@@ -11,7 +11,7 @@ export default function MenuItem({ title, address, Icon }: MenuItemProps) {
     return (
         <Link href={address} className="flex items-center gap-2">
             <Icon className="text-2xl"/>
-            <p className="uppercase hidden sm:inline text-sm">{title}</p>
+            <p className="hidden sm:inline text-xl">{title}</p>
         </Link>
     );
 }
