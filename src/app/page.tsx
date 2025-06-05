@@ -17,7 +17,7 @@ export default function Home() {
           <div className="flex justify-center flex-col flex-1">
             <Search />
             <Sentiment />
-            <Requests />
+            <Tweets />
           </div>
         </div>
         <div className="flex justify-center flex-col w-1/3">
@@ -25,7 +25,7 @@ export default function Home() {
           <Chart />
         </div>
         <div className="flex justify-center flex-col w-1/3">
-          <Tweets />
+          <Requests />
         </div>
       </div>
     </div>

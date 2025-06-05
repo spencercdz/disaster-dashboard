@@ -54,6 +54,52 @@ body::before {
   background-color: rgba(0, 0, 0, 0.3);
   padding: 1rem;
   margin: 0.5rem;
+  border-radius: 4px;
+}
+
+.maplibregl-ctrl-top-right {
+  margin-top: 10px;
+  margin-right: 10px;
+}
+
+.maplibregl-ctrl-bottom-right {
+  margin-bottom: 10px;
+  margin-right: 10px;
+}
+
+.maplibregl-ctrl-group {
+  background-color: rgba(30, 30, 30, 0.8) !important;
+  border-radius: 4px !important;
+  border: 1px solid rgba(255, 255, 255, 0.8) !important;
+}
+
+.maplibregl-ctrl-group button {
+  background-color: transparent !important;
+  border: none !important;
+}
+
+.maplibregl-ctrl-group button:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.maplibregl-ctrl-group button span {
+  filter: invert(1) !important;
+}
+
+/* Custom center map button styling */
+.center-map {
+  cursor: pointer;
+}
+
+.center-map span {
+  color: rgb(255, 255, 255) !important;
+  filter: none !important;
+  text-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+}
+
+.maplibregl-ctrl-icon.center-map span {
+  color: white !important;
+  filter: none !important;
 }
 
 .search-input {
