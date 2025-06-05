@@ -139,7 +139,7 @@ export default function Map() {
     return (
         <div className="flex container-default flex-col h-full">
             <div className="mb-2">
-                <h1 className="text-1xl font-bold">Map</h1>
+                <h1 className="text-1xl font-bold">World Map</h1>
             </div>
             <div 
                 ref={mapContainer} 
