@@ -5,13 +5,13 @@ import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
 export default function Map() {
-    // References for the map container and map instance
-    const mapContainer = useRef(null);
-    const map = useRef(null);
+    // References for the map container and map instance with proper types
+    const mapContainer = useRef<HTMLDivElement | null>(null);
+    const map = useRef<maplibregl.Map | null>(null);
     
-    // Myanmar coordinates
-    const myanmarCoordinates = [96.0, 21.0];
-    const myanmarZoomLevel = 4.5;
+    // Myanmar coordinates with proper type
+    const myanmarCoordinates: [number, number] = [96.0, 21.0];
+    const myanmarZoomLevel: number = 4.5;
 
     useEffect(() => {
         // Prevent re-initialization if map already exists
@@ -86,12 +86,12 @@ export default function Map() {
             attributionControl: false
         });
         
-        // Create a custom center map control
-        class CenterMapControl {
-            _map;
-            _container;
+        // Create a custom center map control with proper types
+        class CenterMapControl implements maplibregl.IControl {
+            _map: maplibregl.Map | undefined;
+            _container!: HTMLDivElement;
             
-            onAdd(map) {
+            onAdd(map: maplibregl.Map): HTMLElement {
                 this._map = map;
                 this._container = document.createElement('div');
                 this._container.className = 'maplibregl-ctrl maplibregl-ctrl-group';
@@ -101,19 +101,23 @@ export default function Map() {
                 button.innerHTML = '<span style="display:inline-block;width:20px;height:20px;text-align:center;font-weight:bold;font-size:18px;color:white;">⚲</span>';
                 button.title = 'Center Map';
                 button.addEventListener('click', () => {
-                    this._map.flyTo({
-                        center: myanmarCoordinates,
-                        zoom: myanmarZoomLevel,
-                        essential: true
-                    });
+                    if (this._map) {
+                        this._map.flyTo({
+                            center: myanmarCoordinates,
+                            zoom: myanmarZoomLevel,
+                            essential: true
+                        });
+                    }
                 });
                 
                 this._container.appendChild(button);
                 return this._container;
             }
             
-            onRemove() {
-                this._container.parentNode.removeChild(this._container);
+            onRemove(): void {
+                if (this._container.parentNode) {
+                    this._container.parentNode.removeChild(this._container);
+                }
                 this._map = undefined;
             }
         }

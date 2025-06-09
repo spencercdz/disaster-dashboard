@@ -5,7 +5,7 @@ import { AiFillFilePdf } from "react-icons/ai";
 
 export default function Header() {
     return (
-        <div className="flex container-default justify-between p-4 font-[family-name:var(--font-geist-mono)]">
+        <div className="flex container-default justify-between p-2 font-[family-name:var(--font-geist-mono)]">
             <div className="flex gap-4 items-center">
                 <MenuItem title="Home" address="/" Icon={AiFillHome}/>
                 <MenuItem title="Chatbot" address="/" Icon={AiFillMessage}/>
