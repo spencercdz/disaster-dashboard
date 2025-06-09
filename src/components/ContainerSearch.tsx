@@ -231,10 +231,10 @@ export default function Search() {
                 {/* Search Actions and Tips */}
                 <div className="pt-2 border-t border-gray-700 space-y-2">
                     <div className="flex justify-between items-center">
-                        <button type="button" onClick={handleReset} className="search-button">
+                        <button type="button" onClick={handleReset} className="search-button text-xs">
                             Reset Filters
                         </button>
-                        <button type="submit" className="search-button">
+                        <button type="submit" className="search-button text-xs">
                             Search
                         </button>
                     </div>

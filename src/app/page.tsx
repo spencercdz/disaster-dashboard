@@ -10,14 +10,14 @@ import Requests from "@/components/ContainerRequests";
 export default function Home() {
   return (
     <div className="flex flex-col h-screen overflow-hidden"> {/* Changed min-h-screen to h-screen and added overflow-hidden */}
-      <div>
+      <div className="flex flex-col space-y-3">
         <Header />
       </div>
 
       {/* Main content area takes remaining height and uses flex */}
-      <div className="flex-1 flex flex-row justify-between relative overflow-hidden pb-2"> {/* Added pb-2 for bottom padding */}
+      <div className="flex-1 flex flex-row justify-between relative overflow-hidden pb-1"> {/* Added pb-2 for bottom padding */}
         {/* Column 1: Search, Sentiment, Tweets */}
-        <div className="flex flex-col w-1/3 h-full overflow-hidden space-y-2"> {/* Added h-full, overflow-hidden, padding and space */}
+        <div className="flex flex-col w-1/3 h-full overflow-hidden space-y-4"> {/* Added h-full, overflow-hidden, padding and space */}
           <div className="flex-none"> {/* Search container takes its content height */}
             <Search />
           </div>
@@ -30,7 +30,7 @@ export default function Home() {
         </div>
 
         {/* Column 2: Map, Chart */}
-        <div className="flex flex-col w-1/3 h-full overflow-hidden space-y-2"> {/* Added h-full, overflow-hidden, padding and space */}
+        <div className="flex flex-col w-1/3 h-full overflow-hidden space-y-4"> {/* Added h-full, overflow-hidden, padding and space */}
           <div className="h-1/2"> {/* Map takes 50% height */}
             <Map />
           </div>
