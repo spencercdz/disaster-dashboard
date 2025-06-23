@@ -1,215 +1,115 @@
 'use client';
 
 import { useState } from 'react';
+import { Tweet } from '../app/types/tweet';
 
-// Define types for tweet data
-interface Tweet {
-    id: string;
-    user: {
-        name: string;
-        handle: string;
-        avatar: string;
-    };
-    content: string;
-    timestamp: string;
-    location?: string;
-    metrics: {
-        likes: number;
-        retweets: number;
-        replies: number;
-    };
-    sentiment: 'positive' | 'neutral' | 'negative';
-    verified: boolean;
-    hasMedia: boolean;
+interface TweetsProps {
+    tweets: Tweet[];
 }
 
-export default function Tweets() {
-    // Mock tweet data
-    const [tweets, setTweets] = useState<Tweet[]>([
-        {
-            id: '1',
-            user: {
-                name: 'Myanmar Relief',
-                handle: '@myanmarrelief',
-                avatar: 'https://placehold.co/40x40'
-            },
-            content: 'Urgent need for medical supplies in Yangon region. Local hospitals are overwhelmed with patients. #MyanmarFlood #EmergencyRelief',
-            timestamp: '2023-06-15T14:30:00Z',
-            location: 'Yangon, Myanmar',
-            metrics: {
-                likes: 245,
-                retweets: 189,
-                replies: 42
-            },
-            sentiment: 'negative',
-            verified: true,
-            hasMedia: false
-        },
-        {
-            id: '2',
-            user: {
-                name: 'Disaster Response',
-                handle: '@disasterresponse',
-                avatar: 'https://placehold.co/40x40'
-            },
-            content: 'Our team has successfully evacuated 120 people from flooded areas in Mandalay. Rescue operations continue. #RescueEfforts',
-            timestamp: '2023-06-15T12:15:00Z',
-            location: 'Mandalay, Myanmar',
-            metrics: {
-                likes: 512,
-                retweets: 302,
-                replies: 78
-            },
-            sentiment: 'positive',
-            verified: true,
-            hasMedia: true
-        },
-        {
-            id: '3',
-            user: {
-                name: 'Weather Alert',
-                handle: '@weatheralert',
-                avatar: 'https://placehold.co/40x40'
-            },
-            content: 'Heavy rainfall expected to continue for the next 48 hours across central Myanmar. Please stay indoors if possible. #WeatherWarning',
-            timestamp: '2023-06-15T10:45:00Z',
-            metrics: {
-                likes: 189,
-                retweets: 245,
-                replies: 36
-            },
-            sentiment: 'neutral',
-            verified: true,
-            hasMedia: false
-        },
-        {
-            id: '4',
-            user: {
-                name: 'Local Volunteer',
-                handle: '@helpinghand',
-                avatar: 'https://placehold.co/40x40'
-            },
-            content: 'Distributing food and water in Bago region today. So many families in need but the community spirit is strong! #CommunitySupport',
-            timestamp: '2023-06-15T09:20:00Z',
-            location: 'Bago, Myanmar',
-            metrics: {
-                likes: 324,
-                retweets: 156,
-                replies: 42
-            },
-            sentiment: 'positive',
-            verified: false,
-            hasMedia: true
-        }
-    ]);
+function removeLinks(text: string) {
+    // Remove http, https, www, t.co, etc
+    return text.replace(/https?:\/\/\S+|www\.\S+|t\.co\/\S+/gi, '').replace(/\s+/g, ' ').trim();
+}
 
-    // Function to format timestamp
-    const formatTimestamp = (timestamp: string) => {
-        const date = new Date(timestamp);
-        return date.toLocaleString('en-US', { 
-            month: 'short', 
-            day: 'numeric', 
-            hour: '2-digit', 
-            minute: '2-digit' 
-        });
-    };
+function formatTimestamp(timestamp: string) {
+    // Try ISO first
+    let date = new Date(timestamp);
+    if (!isNaN(date.getTime())) return date.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', year: 'numeric' });
+    // Try custom format: 2025-04-19_14-49-23
+    const match = timestamp.match(/(\d{4})-(\d{2})-(\d{2})_(\d{2})-(\d{2})-(\d{2})/);
+    if (match) {
+        const [_, y, m, d, h, min, s] = match;
+        date = new Date(`${y}-${m}-${d}T${h}:${min}:${s}`);
+        if (!isNaN(date.getTime())) return date.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', year: 'numeric' });
+    }
+    return timestamp;
+}
 
-    // Function to get sentiment color
-    const getSentimentColor = (sentiment: string) => {
-        switch(sentiment) {
-            case 'positive': return 'border-green-500';
-            case 'neutral': return 'border-blue-400';
-            case 'negative': return 'border-red-500';
-            default: return 'border-gray-400';
-        }
-    };
+function getTweetUrl(tweet: Tweet) {
+    return `https://twitter.com/i/web/status/${tweet.tweet_id}`;
+}
 
-    // Function to format numbers (e.g., 1.2K instead of 1200)
-    const formatNumber = (num: number) => {
-        if (num >= 1000) {
-            return (num / 1000).toFixed(1) + 'K';
+export default function ContainerTweets({ tweets }: TweetsProps) {
+    const [sortType, setSortType] = useState<'recent' | 'popular'>('recent');
+    const [hovered, setHovered] = useState<number | null>(null);
+
+    // Sorting logic
+    const sortedTweets = [...tweets].sort((a, b) => {
+        if (sortType === 'recent') {
+            return new Date(b.time).getTime() - new Date(a.time).getTime();
+        } else {
+            // Sort by sum of retweets + favorites (as numbers)
+            const aScore = (parseInt(a.retweets) || 0) + (parseInt(a.favorites) || 0);
+            const bScore = (parseInt(b.retweets) || 0) + (parseInt(b.favorites) || 0);
+            return bScore - aScore;
         }
-        return num.toString();
-    };
+    });
 
     return (
         <div className="flex container-default flex-col h-full">
             <div className="mb-2 flex justify-between items-center">
-                <h1 className="text-1xl font-bold">Recent Tweets</h1>
+                <h1 className="text-1xl font-bold">Tweets</h1>
                 <div className="flex space-x-2">
-                    <select className="search-input text-xs py-1 px-2">
-                        <option value="all">All Tweets</option>
-                        <option value="verified">Verified Only</option>
-                        <option value="media">With Media</option>
-                    </select>
-                    <select className="search-input text-xs py-1 px-2">
+                    <select
+                        className="search-input text-xs py-1 px-2"
+                        value={sortType}
+                        onChange={e => setSortType(e.target.value as 'recent' | 'popular')}
+                    >
                         <option value="recent">Most Recent</option>
                         <option value="popular">Most Popular</option>
                     </select>
                 </div>
             </div>
-            
-            {/* Tweets List */}
             <div className="flex-1 overflow-y-auto space-y-3 pr-1">
-                {tweets.map(tweet => (
-                    <div 
-                        key={tweet.id} 
-                        className={`p-3 bg-black bg-opacity-20 rounded-md border-l-4 ${getSentimentColor(tweet.sentiment)}`}
-                    >
-                        {/* Tweet Header */}
-                        <div className="flex justify-between items-start mb-2">
-                            <div className="flex items-center">
-                                <div className="w-10 h-10 rounded-full overflow-hidden mr-2">
-                                    <img src={tweet.user.avatar} alt={tweet.user.name} className="w-full h-full object-cover" />
-                                </div>
-                                <div>
+                {sortedTweets.length === 0 ? (
+                    <div className="text-gray-400">No tweets found for this query.</div>
+                ) : (
+                    sortedTweets.map(tweet => (
+                        <a
+                            key={tweet.tweet_id}
+                            href={getTweetUrl(tweet)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={`block transition-all duration-200 rounded-lg border-l-4 border-blue-400 bg-gradient-to-br from-black/60 to-black/30 shadow-md hover:shadow-2xl hover:scale-[1.025] hover:border-blue-300 hover:bg-gradient-to-br hover:from-blue-900/60 hover:to-black/60 cursor-pointer group ${hovered === tweet.tweet_id ? 'z-10' : ''}`}
+                            onMouseEnter={() => setHovered(tweet.tweet_id)}
+                            onMouseLeave={() => setHovered(null)}
+                        >
+                            <div className="p-3">
+                                {/* Tweet Header */}
+                                <div className="flex justify-between items-start mb-2">
                                     <div className="flex items-center">
-                                        <span className="font-semibold mr-1">{tweet.user.name}</span>
-                                        {tweet.verified && (
-                                            <span className="text-blue-400 text-sm">✓</span>
-                                        )}
+                                        <span className="font-semibold mr-1">@{tweet.username}</span>
+                                        {tweet.verified && <span className="text-blue-400 text-sm">✓</span>}
                                     </div>
-                                    <span className="text-gray-400 text-sm">{tweet.user.handle}</span>
+                                    <span className="text-gray-400 text-xs">{formatTimestamp(tweet.time)}</span>
+                                </div>
+                                {/* Tweet Content */}
+                                <p className="mb-2 text-base leading-snug">
+                                    {removeLinks(tweet.text)}
+                                </p>
+                                {/* Tweet Location (if available) */}
+                                {tweet.location && tweet.location !== 'EMPTY' && (
+                                    <div className="flex items-center text-xs text-gray-400 mb-2">
+                                        <span className="mr-1">📍</span>
+                                        <span>{tweet.location}</span>
+                                    </div>
+                                )}
+                                {/* Tweet Metrics */}
+                                <div className="flex flex-wrap gap-4 text-xs text-gray-400 pt-2 border-t border-gray-700">
+                                    <span>Retweets: {tweet.retweets}</span>
+                                    <span>Favorites: {tweet.favorites}</span>
+                                    <span>Replies: {tweet.replies}</span>
+                                    <span>Followers: {tweet.followers}</span>
+                                </div>
+                                {/* Hover hint */}
+                                <div className={`transition-opacity duration-200 text-xs text-blue-300 mt-2 ${hovered === tweet.tweet_id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+                                    Click to view on Twitter
                                 </div>
                             </div>
-                            <span className="text-gray-400 text-xs">{formatTimestamp(tweet.timestamp)}</span>
-                        </div>
-                        
-                        {/* Tweet Content */}
-                        <p className="mb-2">{tweet.content}</p>
-                        
-                        {/* Tweet Location (if available) */}
-                        {tweet.location && (
-                            <div className="flex items-center text-xs text-gray-400 mb-2">
-                                <span className="mr-1">📍</span>
-                                <span>{tweet.location}</span>
-                            </div>
-                        )}
-                        
-                        {/* Tweet Media Indicator */}
-                        {tweet.hasMedia && (
-                            <div className="mb-2 p-2 bg-black bg-opacity-30 rounded-md text-center text-sm text-gray-300">
-                                [Media content]                                
-                            </div>
-                        )}
-                        
-                        {/* Tweet Metrics */}
-                        <div className="flex justify-between text-xs text-gray-400 pt-2 border-t border-gray-700">
-                            <div className="flex items-center">
-                                <span className="mr-1">💬</span>
-                                <span>{formatNumber(tweet.metrics.replies)}</span>
-                            </div>
-                            <div className="flex items-center">
-                                <span className="mr-1">🔄</span>
-                                <span>{formatNumber(tweet.metrics.retweets)}</span>
-                            </div>
-                            <div className="flex items-center">
-                                <span className="mr-1">❤️</span>
-                                <span>{formatNumber(tweet.metrics.likes)}</span>
-                            </div>
-                        </div>
-                    </div>
-                ))}
+                        </a>
+                    ))
+                )}
             </div>
         </div>
     );

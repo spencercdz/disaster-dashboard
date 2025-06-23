@@ -6,13 +6,6 @@
   --foreground: #171717;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
@@ -103,12 +96,13 @@ body::before {
 }
 
 .search-input {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(20, 20, 20, 0.9);
   border: 1px solid rgba(255, 255, 255, 0.2);
   color: var(--foreground);
   padding: 0.5rem;
   border-radius: 4px;
   width: 100%;
+  color-scheme: dark;
 }
 
 .search-button {
@@ -122,4 +116,16 @@ body::before {
 
 .search-button:hover {
   background-color: rgba(255, 255, 255, 0.2);
+}
+
+*::-webkit-scrollbar-thumb {
+  background: rgba(40, 40, 40, 0.7);
+}
+
+*::-webkit-scrollbar-track {
+  background: var(--background);
+}
+
+* {
+  scrollbar-color: rgba(255, 255, 255, 0.2) var(--background);
 }

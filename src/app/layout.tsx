@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "HADR Dashboard",
+  title: "OPERA Dashboard",
   description: "For Human Assistance and Disaster Response",
 };
 
