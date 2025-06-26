@@ -186,7 +186,7 @@ export default function Chart() {
       </div>
       
       <div className="mt-2 text-xs text-gray-400">
-        <p>Sentiment trend for Myanmar flood disaster over the past 10 days</p>
+        <p>Comprehensive Chart Analysis Over Time</p>
       </div>
     </div>
   );

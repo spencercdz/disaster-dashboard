@@ -114,7 +114,7 @@ export default function Requests() {
             </div>
             
             {/* New Request Form */}
-            <div className="mb-4 p-3 bg-black bg-opacity-20 rounded-md">
+            <div className="mb-4 p-3 rounded-lg bg-gradient-to-br from-black/60 to-black/30 shadow-md group">
                 <h2 className="text-md font-semibold mb-2">Submit New Request</h2>
                 <form onSubmit={handleSubmit} className="flex flex-col space-y-2">
                     <div className="flex space-x-2">
@@ -175,7 +175,7 @@ export default function Requests() {
             <div className="flex-1 overflow-y-auto">
                 <div className="space-y-2">
                     {requests.map(request => (
-                        <div key={request.id} className="p-3 bg-black bg-opacity-20 rounded-md">
+                        <div key={request.id} className="p-3 rounded-lg bg-gradient-to-br from-black/60 to-black/30 shadow-md group">
                             <div className="flex justify-between items-start mb-2">
                                 <div className="flex items-center">
                                     <span className="font-semibold mr-2">{request.type}</span>

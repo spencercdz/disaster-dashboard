@@ -80,10 +80,10 @@ export default function Sentiment() {
             </div>
             
             {/* Sentiment Score */}
-            <div className="flex justify-between items-center mb-4 p-3 bg-black bg-opacity-20 rounded-md">
+            <div className="flex justify-between items-center mb-4 p-3 rounded-lg bg-gradient-to-br from-black/60 to-black/30 shadow-md group">
                 <div className="flex flex-col">
-                    <span className="text-sm text-gray-300">Overall Sentiment</span>
-                    <span className={`text-2xl font-bold ${getScoreColor(sentimentData.score)}`}>
+                    <span className="text-sm font-semibold mb-2">Overall Sentiment</span>
+                    <span className={`text-xl font-bold ${getScoreColor(sentimentData.score)}`}>
                         {getSentimentDescription(sentimentData.score)}
                     </span>
                 </div>
@@ -98,9 +98,9 @@ export default function Sentiment() {
             </div>
             
             {/* Sentiment Breakdown */}
-            <div className="mb-4 p-3 bg-black bg-opacity-20 rounded-md">
-                <h2 className="text-md font-semibold mb-2">Sentiment Breakdown</h2>
-                <div className="flex h-6 rounded-md overflow-hidden mb-2">
+            <div className="mb-4 p-3 rounded-lg bg-gradient-to-br from-black/60 to-black/30 shadow-md group">
+                <h2 className="text-sm font-semibold mb-2">Sentiment Breakdown</h2>
+                <div className="flex h-2 rounded-md overflow-hidden mb-2">
                     <div 
                         className="bg-green-500" 
                         style={{ width: `${sentimentData.breakdown.positive}%` }}
@@ -116,15 +116,15 @@ export default function Sentiment() {
                 </div>
                 <div className="flex justify-between text-sm">
                     <div className="flex items-center">
-                        <div className="w-3 h-3 bg-green-500 rounded-full mr-1" />
+                        <div className="w-2 h-2 bg-green-500 rounded-full mr-1" />
                         <span>Positive: {sentimentData.breakdown.positive}%</span>
                     </div>
                     <div className="flex items-center">
-                        <div className="w-3 h-3 bg-blue-400 rounded-full mr-1" />
+                        <div className="w-2 h-2 bg-blue-400 rounded-full mr-1" />
                         <span>Neutral: {sentimentData.breakdown.neutral}%</span>
                     </div>
                     <div className="flex items-center">
-                        <div className="w-3 h-3 bg-red-500 rounded-full mr-1" />
+                        <div className="w-2 h-2 bg-red-500 rounded-full mr-1" />
                         <span>Negative: {sentimentData.breakdown.negative}%</span>
                     </div>
                 </div>

@@ -68,14 +68,14 @@ export default function ContainerTweets({ tweets }: TweetsProps) {
                     sortedTweets.map(tweet => (
                         <a
                             key={tweet.tweet_id}
-                            href={getTweetUrl(tweet)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className={`block transition-all duration-200 rounded-lg border-l-4 border-blue-400 bg-gradient-to-br from-black/60 to-black/30 shadow-md hover:shadow-2xl hover:scale-[1.025] hover:border-blue-300 hover:bg-gradient-to-br hover:from-blue-900/60 hover:to-black/60 cursor-pointer group ${hovered === tweet.tweet_id ? 'z-10' : ''}`}
+                            className={
+                                `flex transition-all duration-200 rounded-lg bg-gradient-to-br from-black/60 to-black/30 shadow-md group`
+                            }
                             onMouseEnter={() => setHovered(tweet.tweet_id)}
                             onMouseLeave={() => setHovered(null)}
                         >
-                            <div className="p-3">
+                            <div className="w-2 rounded-l-lg bg-blue-400 transition-colors duration-200 group-hover:bg-blue-300 flex-shrink-0"></div>
+                            <div className="flex-1 p-3 relative">
                                 {/* Tweet Header */}
                                 <div className="flex justify-between items-start mb-2">
                                     <div className="flex items-center">
@@ -96,15 +96,19 @@ export default function ContainerTweets({ tweets }: TweetsProps) {
                                     </div>
                                 )}
                                 {/* Tweet Metrics */}
-                                <div className="flex flex-wrap gap-4 text-xs text-gray-400 pt-2 border-t border-gray-700">
+                                <div className="flex flex-wrap gap-4 text-xs text-gray-400 pt-2 border-t border-gray-700 items-center">
                                     <span>Retweets: {tweet.retweets}</span>
                                     <span>Favorites: {tweet.favorites}</span>
                                     <span>Replies: {tweet.replies}</span>
                                     <span>Followers: {tweet.followers}</span>
-                                </div>
-                                {/* Hover hint */}
-                                <div className={`transition-opacity duration-200 text-xs text-blue-300 mt-2 ${hovered === tweet.tweet_id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
-                                    Click to view on Twitter
+                                    <a
+                                        href={getTweetUrl(tweet)}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="ml-auto hover:bg-neutral-700 text-blue-400 hover:text-blue-300 rounded shadow transition-colors duration-150 font-semibold"
+                                    >
+                                        View on X.com
+                                    </a>
                                 </div>
                             </div>
                         </a>

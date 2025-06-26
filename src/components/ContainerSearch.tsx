@@ -54,8 +54,8 @@ const years = [
 
 export default function ContainerSearch({ onTweetsFetched }: SearchProps) {
     const [country, setCountry] = useState('Myanmar');
-    const [disasterType, setDisasterType] = useState('');
-    const [year, setYear] = useState('');
+    const [disasterType, setDisasterType] = useState('earthquake');
+    const [year, setYear] = useState('2025');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
