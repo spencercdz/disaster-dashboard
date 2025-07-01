@@ -27,14 +27,6 @@ ChartJS.register(
 );
 
 // Define types for sentiment data
-interface SentimentDataPoint {
-  date: string;
-  positive: number;
-  neutral: number;
-  negative: number;
-  overall: number;
-}
-
 interface Prediction {
   tweet_id: string;
   time?: string;
@@ -146,9 +138,9 @@ export default function ContainerChart({ predictions, tweets }: ContainerChartPr
         padding: 10,
         displayColors: true,
         callbacks: {
-          label: function(context: any) {
-            const label = context.dataset.label || '';
-            const value = context.raw;
+          label: function(tooltipItem: any) {
+            const label = tooltipItem.dataset.label || '';
+            const value = tooltipItem.raw;
             return `${label}: ${value.toFixed(1)}`;
           },
         },

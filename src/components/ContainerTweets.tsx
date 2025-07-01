@@ -4,9 +4,14 @@ import { useState } from 'react';
 import { Tweet } from '../app/types/tweet';
 import dayjs from 'dayjs';
 
+interface Prediction {
+    tweet_id: string;
+    sentiment: number | string;
+}
+
 interface TweetsProps {
     tweets: Tweet[];
-    predictions?: any[];
+    predictions?: Prediction[];
 }
 
 function removeLinks(text: string) {
@@ -33,7 +38,7 @@ function getTweetUrl(tweet: Tweet) {
     return `https://twitter.com/i/web/status/${tweet.tweet_id}`;
 }
 
-function getSentimentForTweet(tweetId: string, predictions: any[]): number | null {
+function getSentimentForTweet(tweetId: string, predictions: Prediction[]): number | null {
     // Ensure both tweetId and prediction.tweet_id are strings for comparison
     const pred = predictions.find(p => String(p.tweet_id) === String(tweetId));
     if (!pred) {

@@ -1,5 +1,4 @@
 "use client";
-import Image from "next/image";
 import Header from "@/components/Header";
 import ContainerSearch from "@/components/ContainerSearch";
 import Chart from "@/components/ContainerChart";
@@ -13,7 +12,6 @@ import { Tweet } from "./types/tweet";
 export default function ClientHome() {
   const [tweets, setTweets] = useState<Tweet[]>([]);
   const [predictions, setPredictions] = useState<any[]>([]);
-  const [loadingPredictions, setLoadingPredictions] = useState(false);
 
   useEffect(() => {
     async function fetchPredictions() {
@@ -21,7 +19,6 @@ export default function ClientHome() {
         setPredictions([]);
         return;
       }
-      setLoadingPredictions(true);
       const tweetIds = tweets.map(t => t.tweet_id.toString());
       const res = await fetch("/api/predictions", {
         method: "POST",
@@ -34,7 +31,6 @@ export default function ClientHome() {
       } else {
         setPredictions([]);
       }
-      setLoadingPredictions(false);
     }
     fetchPredictions();
   }, [tweets]);

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Tweet } from '../app/types/tweet';
 
 interface SearchProps {
-    onTweetsFetched: (tweets: any[]) => void;
+    onTweetsFetched: (tweets: Tweet[]) => void;
 }
 
 // Define types for search filters
@@ -73,8 +73,8 @@ export default function ContainerSearch({ onTweetsFetched }: SearchProps) {
             if (!res.ok) throw new Error('Failed to fetch tweets');
             const data = await res.json();
             onTweetsFetched(data);
-        } catch (err: any) {
-            setError(err.message || 'Unknown error');
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : 'Unknown error');
         } finally {
             setLoading(false);
         }

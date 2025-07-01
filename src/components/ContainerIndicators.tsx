@@ -16,6 +16,8 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 
 // Define types for request data
 interface Prediction {
+  tweet_id: string;
+  sentiment: number | string;
   request: string;
   medical_help: string;
   food: string;
@@ -34,7 +36,8 @@ interface Prediction {
   storm: string;
   fire: string;
   earthquake: string;
-  [key: string]: any;
+  // ... add more as needed
+  [key: string]: string | number;
 }
 
 interface ContainerRequestsProps {
