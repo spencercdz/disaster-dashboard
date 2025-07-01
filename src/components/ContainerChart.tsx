@@ -10,9 +10,11 @@ import {
   Title,
   Tooltip,
   Legend,
-  Filler
+  Filler,
+  TooltipItem
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
+import { Prediction } from '../app/types/prediction';
 
 // Register ChartJS components
 ChartJS.register(
@@ -25,14 +27,6 @@ ChartJS.register(
   Legend,
   Filler
 );
-
-// Define types for sentiment data
-interface Prediction {
-  tweet_id: string;
-  time?: string;
-  sentiment: number | string;
-  // ... other fields
-}
 
 interface ContainerChartProps {
   predictions: Prediction[];
@@ -138,10 +132,13 @@ export default function ContainerChart({ predictions, tweets }: ContainerChartPr
         padding: 10,
         displayColors: true,
         callbacks: {
-          label: function(tooltipItem: any) {
+          label: function(tooltipItem: TooltipItem<'line'>) {
             const label = tooltipItem.dataset.label || '';
             const value = tooltipItem.raw;
-            return `${label}: ${value.toFixed(1)}`;
+            if (typeof value === 'number') {
+              return `${label}: ${value.toFixed(1)}`;
+            }
+            return label;
           },
         },
       },

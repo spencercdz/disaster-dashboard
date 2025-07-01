@@ -7,19 +7,6 @@ interface SearchProps {
     onTweetsFetched: (tweets: Tweet[]) => void;
 }
 
-// Define types for search filters
-interface SearchFilters {
-    country: string;
-    disasterType: string;
-    year: string;
-    severity: string;
-    dateRange: {
-        start: string;
-        end: string;
-    };
-    keywords: string;
-}
-
 // Define disaster type options
 const disasterTypes = [
     { value: '', label: 'All Types' },
@@ -31,15 +18,6 @@ const disasterTypes = [
     { value: 'landslide', label: 'Landslide' },
     { value: 'tsunami', label: 'Tsunami' },
     { value: 'volcanic', label: 'Volcanic Activity' },
-];
-
-// Define severity levels
-const severityLevels = [
-    { value: '', label: 'All Levels' },
-    { value: 'low', label: 'Low' },
-    { value: 'medium', label: 'Medium' },
-    { value: 'high', label: 'High' },
-    { value: 'critical', label: 'Critical' },
 ];
 
 // Generate years for dropdown (last 20 years)

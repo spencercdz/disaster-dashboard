@@ -8,10 +8,11 @@ import ContainerTweets from "@/components/ContainerTweets";
 import Requests from "@/components/ContainerIndicators";
 import { useState, useEffect } from "react";
 import { Tweet } from "./types/tweet";
+import { Prediction } from './types/prediction';
 
 export default function ClientHome() {
   const [tweets, setTweets] = useState<Tweet[]>([]);
-  const [predictions, setPredictions] = useState<any[]>([]);
+  const [predictions, setPredictions] = useState<Prediction[]>([]);
 
   useEffect(() => {
     async function fetchPredictions() {
@@ -50,7 +51,9 @@ export default function ClientHome() {
             <Sentiment predictions={predictions} />
           </div>
           <div className="flex-grow h-[calc(70%-1rem)]">
-            <ContainerTweets tweets={tweets} predictions={predictions} />
+            {tweets.length > 0 && predictions.length > 0 && (
+              <ContainerTweets tweets={tweets} predictions={predictions} />
+            )}
           </div>
         </div>
         {/* Column 2: Map, Chart */}

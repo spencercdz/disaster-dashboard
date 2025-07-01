@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useMemo } from 'react';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
@@ -10,7 +10,7 @@ export default function Map() {
     const map = useRef<maplibregl.Map | null>(null);
     
     // Myanmar coordinates with proper type
-    const myanmarCoordinates: [number, number] = [96.0, 21.0];
+    const myanmarCoordinates = useMemo<[number, number]>(() => [95.9560, 21.9162], []);
     const myanmarZoomLevel: number = 4.5;
 
     useEffect(() => {
@@ -138,7 +138,7 @@ export default function Map() {
                 map.current = null;
             }
         };
-    }, []);
+    }, [myanmarCoordinates]);
 
     return (
         <div className="flex container-default flex-col h-full">

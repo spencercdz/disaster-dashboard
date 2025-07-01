@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import dayjs from 'dayjs';
 import { Bar } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -12,33 +11,8 @@ import {
   Tooltip,
   Legend
 } from 'chart.js';
+import { Prediction } from '../app/types/prediction';
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
-
-// Define types for request data
-interface Prediction {
-  tweet_id: string;
-  sentiment: number | string;
-  request: string;
-  medical_help: string;
-  food: string;
-  shelter: string;
-  water: string;
-  missing_people: string;
-  refugees: string;
-  death: string;
-  infrastructure_related: string;
-  transport: string;
-  buildings: string;
-  electricity: string;
-  hospitals: string;
-  aid_centers: string;
-  floods: string;
-  storm: string;
-  fire: string;
-  earthquake: string;
-  // ... add more as needed
-  [key: string]: string | number;
-}
 
 interface ContainerRequestsProps {
   predictions: Prediction[];
@@ -87,7 +61,7 @@ export default function ContainerRequests({ predictions }: ContainerRequestsProp
       datasets: [
         {
           label: 'Count',
-          data: pagedIndicators.map(([_, v]) => v),
+          data: pagedIndicators.map(([, v]) => v),
           backgroundColor: 'rgba(54, 162, 235, 0.7)',
         },
       ],

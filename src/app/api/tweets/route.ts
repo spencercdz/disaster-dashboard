@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { Tweet } from '../../types/tweet';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -13,7 +14,7 @@ export async function GET(req: NextRequest) {
     supabaseQuery = supabaseQuery.ilike('query', `%${query}%`);
   }
   // Supabase limits to 1000 rows per request, so we batch fetch all rows
-  let allData: any[] = [];
+  let allData: Tweet[] = [];
   let from = 0;
   const batchSize = 1000;
   let done = false;

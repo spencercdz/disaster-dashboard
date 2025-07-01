@@ -3,11 +3,7 @@
 import { useState } from 'react';
 import { Tweet } from '../app/types/tweet';
 import dayjs from 'dayjs';
-
-interface Prediction {
-    tweet_id: string;
-    sentiment: number | string;
-}
+import { Prediction } from '../app/types/prediction';
 
 interface TweetsProps {
     tweets: Tweet[];
@@ -26,7 +22,7 @@ function formatTimestamp(timestamp: string) {
     // Try custom format: 2025-04-19_14-49-23
     const match = timestamp.match(/(\d{4})-(\d{2})-(\d{2})_(\d{2})-(\d{2})-(\d{2})/);
     if (match) {
-        const [_, y, m, d, h, min, s] = match;
+        const [, y, m, d, h, min, s] = match;
         date = new Date(`${y}-${m}-${d}T${h}:${min}:${s}`);
         if (!isNaN(date.getTime())) return dayjs(date).format('YYYY-MM-DD HH:mm');
     }
@@ -66,7 +62,6 @@ function getSentimentHoverColor(score: number | null) {
 
 export default function ContainerTweets({ tweets, predictions = [] }: TweetsProps) {
     const [sortType, setSortType] = useState<'recent' | 'popular'>('recent');
-    const [hovered, setHovered] = useState<string | null>(null);
 
     // Sorting logic
     const sortedTweets = [...tweets].sort((a, b) => {
@@ -109,8 +104,6 @@ export default function ContainerTweets({ tweets, predictions = [] }: TweetsProp
                                 className={
                                     `flex transition-all duration-200 rounded-lg bg-gradient-to-br from-black/60 to-black/30 shadow-md group`
                                 }
-                                onMouseEnter={() => setHovered(tweet.tweet_id)}
-                                onMouseLeave={() => setHovered(null)}
                             >
                                 <div className={`w-2 rounded-l-lg ${sentimentColor} transition-colors duration-200 group-hover:${sentimentHoverColor} flex-shrink-0`}></div>
                                 <div className="flex-1 p-3 relative">

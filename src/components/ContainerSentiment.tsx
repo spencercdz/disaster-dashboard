@@ -1,21 +1,7 @@
 'use client';
 
-import { useState, useMemo } from 'react';
-
-// Define types for sentiment data
-interface SentimentData {
-    score: number;
-    trend: 'up' | 'down' | 'stable';
-    breakdown: {
-        positive: number;
-        neutral: number;
-        negative: number;
-    }
-}
-
-interface Prediction {
-  sentiment: number; // 0-100
-}
+import { useMemo } from 'react';
+import { Prediction } from '../app/types/prediction';
 
 interface ContainerSentimentProps {
   predictions: Prediction[];
@@ -53,16 +39,6 @@ export default function ContainerSentiment({ predictions }: ContainerSentimentPr
             },
         };
     }, [predictions]);
-
-    // Function to get sentiment color
-    const getSentimentColor = (sentiment: string) => {
-        switch(sentiment) {
-            case 'positive': return 'text-green-500';
-            case 'neutral': return 'text-blue-400';
-            case 'negative': return 'text-red-500';
-            default: return 'text-gray-400';
-        }
-    };
 
     // Function to get trend icon
     const getTrendIcon = (trend: string) => {
