@@ -5,6 +5,7 @@ import { Tweet } from '../app/types/tweet';
 
 interface SearchProps {
     onTweetsFetched: (tweets: Tweet[]) => void;
+    onSearchStart: () => void;
 }
 
 // Define disaster type options
@@ -30,7 +31,7 @@ const years = [
     })
 ];
 
-export default function ContainerSearch({ onTweetsFetched }: SearchProps) {
+export default function ContainerSearch({ onTweetsFetched, onSearchStart }: SearchProps) {
     const [country, setCountry] = useState('Myanmar');
     const [disasterType, setDisasterType] = useState('earthquake');
     const [year, setYear] = useState('2025');

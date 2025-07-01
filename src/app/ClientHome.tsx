@@ -13,11 +13,13 @@ import { Prediction } from './types/prediction';
 export default function ClientHome() {
   const [tweets, setTweets] = useState<Tweet[]>([]);
   const [predictions, setPredictions] = useState<Prediction[]>([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     async function fetchPredictions() {
       if (tweets.length === 0) {
         setPredictions([]);
+        setLoading(false);
         return;
       }
       const tweetIds = tweets.map(t => t.tweet_id.toString());
@@ -32,12 +34,36 @@ export default function ClientHome() {
       } else {
         setPredictions([]);
       }
+      setLoading(false);
     }
+    if (tweets.length > 0) setLoading(true);
     fetchPredictions();
   }, [tweets]);
 
+  // Animated loading dots
+  const [dotCount, setDotCount] = useState(1);
+  useEffect(() => {
+    if (!loading) return;
+    const interval = setInterval(() => {
+      setDotCount(d => (d % 3) + 1);
+    }, 500);
+    return () => clearInterval(interval);
+  }, [loading]);
+
   return (
     <div className="flex flex-col h-screen overflow-hidden">
+      {loading && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+          <div className="rounded-lg bg-gradient-to-br from-black/60 to-black/30 shadow-md group p-6 border border-neutral-700 flex flex-col items-center">
+            <span className="text-xl font-bold text-yellow-400 font-mono tracking-wider">
+              Loading{'.'.repeat(dotCount)}
+            </span>
+            <span className="mt-2 text-xs text-neutral-400 font-mono tracking-widest">
+              Fetching tweets & predictions
+            </span>
+          </div>
+        </div>
+      )}
       <div className="flex flex-col space-y-3">
         <Header />
       </div>
@@ -45,7 +71,7 @@ export default function ClientHome() {
         {/* Column 1: Search, Sentiment, Tweets */}
         <div className="flex flex-col w-1/3 h-full overflow-hidden space-y-4">
           <div className="flex-none">
-            <ContainerSearch onTweetsFetched={setTweets} />
+            <ContainerSearch onTweetsFetched={setTweets} onSearchStart={() => setLoading(true)} />
           </div>
           <div className="flex-grow h-[30%]">
             <Sentiment predictions={predictions} />
