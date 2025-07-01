@@ -51,9 +51,7 @@ export default function ClientHome() {
             <Sentiment predictions={predictions} />
           </div>
           <div className="flex-grow h-[calc(70%-1rem)]">
-            {tweets.length > 0 && predictions.length > 0 && (
-              <ContainerTweets tweets={tweets} predictions={predictions} />
-            )}
+            <ContainerTweets tweets={tweets} predictions={predictions} />
           </div>
         </div>
         {/* Column 2: Map, Chart */}
