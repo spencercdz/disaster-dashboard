@@ -41,6 +41,7 @@ export default function ContainerSearch({ onTweetsFetched, onSearchStart }: Sear
     const handleSearch = async (e: React.FormEvent) => {
         e.preventDefault();
         setError(null);
+        if (onSearchStart) onSearchStart();
         if (!country || !disasterType || !year) {
             setError('Please fill in all fields.');
             return;
