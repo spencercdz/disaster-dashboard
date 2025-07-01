@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -35,24 +35,73 @@ interface SentimentDataPoint {
   overall: number;
 }
 
-export default function Chart() {
-  // Mock sentiment data over time
-  const [sentimentData] = useState<SentimentDataPoint[]>([
-    { date: 'Jun 10', positive: 35, neutral: 40, negative: 25, overall: 0.1 },
-    { date: 'Jun 11', positive: 30, neutral: 45, negative: 25, overall: 0.05 },
-    { date: 'Jun 12', positive: 25, neutral: 45, negative: 30, overall: -0.05 },
-    { date: 'Jun 13', positive: 20, neutral: 40, negative: 40, overall: -0.2 },
-    { date: 'Jun 14', positive: 15, neutral: 35, negative: 50, overall: -0.35 },
-    { date: 'Jun 15', positive: 10, neutral: 30, negative: 60, overall: -0.5 },
-    { date: 'Jun 16', positive: 15, neutral: 35, negative: 50, overall: -0.35 },
-    { date: 'Jun 17', positive: 20, neutral: 40, negative: 40, overall: -0.2 },
-    { date: 'Jun 18', positive: 25, neutral: 45, negative: 30, overall: -0.05 },
-    { date: 'Jun 19', positive: 30, neutral: 45, negative: 25, overall: 0.05 },
-    { date: 'Jun 20', positive: 35, neutral: 40, negative: 25, overall: 0.1 },
-  ]);
+interface Prediction {
+  tweet_id: string;
+  time?: string;
+  sentiment: number | string;
+  // ... other fields
+}
+
+interface ContainerChartProps {
+  predictions: Prediction[];
+  tweets: { tweet_id: string; time: string }[];
+}
+
+export default function ContainerChart({ predictions, tweets }: ContainerChartProps) {
+  // Build a lookup for tweet_id -> time
+  const tweetTimeMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    tweets.forEach(t => { map[t.tweet_id] = t.time; });
+    return map;
+  }, [tweets]);
+
+  // Memoized computation of per-day sentiment analytics
+  const sentimentData = useMemo(() => {
+    if (!predictions || predictions.length === 0) return [];
+    // Group by date (YYYY-MM-DD) using tweet time from tweets table
+    const byDate: Record<string, Prediction[]> = {};
+    predictions.forEach(p => {
+      const tweetTime = tweetTimeMap[p.tweet_id];
+      if (!tweetTime || typeof tweetTime !== 'string') return;
+      // Use only the date part (YYYY-MM-DD)
+      let date = tweetTime.split('T')[0];
+      if (!date || date.length !== 10) {
+        // Try custom format: 2025-03-28_06-57-53
+        const match = tweetTime.match(/(\d{4})-(\d{2})-(\d{2})/);
+        if (match) date = `${match[1]}-${match[2]}-${match[3]}`;
+        else date = 'unknown';
+      }
+      // Convert sentiment to number
+      const sentiment = typeof p.sentiment === 'string' ? parseFloat(p.sentiment) : p.sentiment;
+      if (!byDate[date]) byDate[date] = [];
+      byDate[date].push({ ...p, sentiment });
+    });
+    // For each day, compute the average sentiment and breakdown
+    return Object.entries(byDate)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([date, preds]) => {
+        const total = preds.length;
+        const sum = preds.reduce((acc, p) => acc + (typeof p.sentiment === 'number' ? p.sentiment : 50), 0);
+        const overall = sum / total;
+        let positive = 0, neutral = 0, negative = 0;
+        preds.forEach(p => {
+          const s = typeof p.sentiment === 'string' ? parseFloat(p.sentiment) : p.sentiment;
+          if (s >= 60) positive++;
+          else if (s >= 40) neutral++;
+          else negative++;
+        });
+        return {
+          date,
+          positive: Math.round((positive / total) * 100),
+          neutral: Math.round((neutral / total) * 100),
+          negative: Math.round((negative / total) * 100),
+          overall,
+        };
+      });
+  }, [predictions, tweetTimeMap]);
 
   // State for chart type
-  const [chartType, setChartType] = useState<'sentiment' | 'breakdown'>('sentiment');
+  const [chartType, setChartType] = useState<'sentiment' | 'breakdown'>('breakdown');
 
   // Chart options
   const options = {
@@ -60,9 +109,9 @@ export default function Chart() {
     maintainAspectRatio: false,
     scales: {
       y: {
-        beginAtZero: chartType === 'breakdown',
-        min: chartType === 'sentiment' ? -1 : undefined,
-        max: chartType === 'sentiment' ? 1 : undefined,
+        beginAtZero: true,
+        min: 0,
+        max: 100,
         grid: {
           color: 'rgba(255, 255, 255, 0.1)',
         },
@@ -100,11 +149,7 @@ export default function Chart() {
           label: function(context: any) {
             const label = context.dataset.label || '';
             const value = context.raw;
-            if (chartType === 'sentiment') {
-              return `${label}: ${value.toFixed(2)}`;
-            } else {
-              return `${label}: ${value}%`;
-            }
+            return `${label}: ${value.toFixed(1)}`;
           },
         },
       },

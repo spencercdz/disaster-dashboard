@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 
 // Define types for sentiment data
 interface SentimentData {
@@ -13,17 +13,46 @@ interface SentimentData {
     }
 }
 
-export default function Sentiment() {
-    // Mock sentiment data
-    const [sentimentData, setSentimentData] = useState<SentimentData>({
-        score: 0.35,
-        trend: 'up',
-        breakdown: {
-            positive: 45,
-            neutral: 35,
-            negative: 20
-        },
-    });
+interface Prediction {
+  sentiment: number; // 0-100
+}
+
+interface ContainerSentimentProps {
+  predictions: Prediction[];
+}
+
+export default function ContainerSentiment({ predictions }: ContainerSentimentProps) {
+    // Memoized computation of sentiment analytics
+    const sentimentData = useMemo(() => {
+        if (!predictions || predictions.length === 0) {
+            return {
+                score: 50,
+                trend: 'stable',
+                breakdown: { positive: 0, neutral: 0, negative: 0 },
+            };
+        }
+        // Weighted average
+        const total = predictions.length;
+        const sum = predictions.reduce((acc, p) => acc + (typeof p.sentiment === 'string' ? parseFloat(p.sentiment) : (typeof p.sentiment === 'number' ? p.sentiment : 50)), 0);
+        const score = sum / total;
+        // Breakdown
+        let positive = 0, neutral = 0, negative = 0;
+        predictions.forEach(p => {
+            const s = typeof p.sentiment === 'string' ? parseFloat(p.sentiment) : (typeof p.sentiment === 'number' ? p.sentiment : 50);
+            if (s >= 60) positive++;
+            else if (s >= 40) neutral++;
+            else negative++;
+        });
+        return {
+            score,
+            trend: 'stable', // TODO: add trend logic if needed
+            breakdown: {
+                positive: Math.round((positive / total) * 100),
+                neutral: Math.round((neutral / total) * 100),
+                negative: Math.round((negative / total) * 100),
+            },
+        };
+    }, [predictions]);
 
     // Function to get sentiment color
     const getSentimentColor = (sentiment: string) => {
@@ -57,48 +86,48 @@ export default function Sentiment() {
 
     // Function to get sentiment score description
     const getSentimentDescription = (score: number) => {
-        if (score >= 0.6) return 'Very Positive';
-        if (score >= 0.2) return 'Positive';
-        if (score >= -0.2) return 'Neutral';
-        if (score >= -0.6) return 'Negative';
+        if (score >= 80) return 'Very Positive';
+        if (score >= 60) return 'Positive';
+        if (score >= 40) return 'Neutral';
+        if (score >= 20) return 'Negative';
         return 'Very Negative';
     };
 
     // Calculate sentiment score color
     const getScoreColor = (score: number) => {
-        if (score >= 0.6) return 'text-green-500';
-        if (score >= 0.2) return 'text-green-400';
-        if (score >= -0.2) return 'text-blue-400';
-        if (score >= -0.6) return 'text-red-400';
-        return 'text-red-500';
+        if (score >= 80) return 'text-green-500';
+        if (score >= 60) return 'text-green-400';
+        if (score >= 40) return 'text-yellow-400';
+        if (score >= 20) return 'text-red-500';
+        return 'text-red-600';
     };
 
     return (
         <div className="flex container-default flex-col h-full">
             <div className="mb-2">
-                <h1 className="text-1xl font-bold">Sentiment Analysis</h1>
+                <h1 className="text-1xl font-bold mb-2">Sentiment Analysis</h1>
             </div>
-            
             {/* Sentiment Score */}
-            <div className="flex justify-between items-center mb-4 p-3 rounded-lg bg-gradient-to-br from-black/60 to-black/30 shadow-md group">
-                <div className="flex flex-col">
-                    <span className="text-sm font-semibold mb-2">Overall Sentiment</span>
-                    <span className={`text-xl font-bold ${getScoreColor(sentimentData.score)}`}>
-                        {getSentimentDescription(sentimentData.score)}
-                    </span>
-                </div>
-                <div className="flex items-center">
-                    <span className={`text-3xl font-bold ${getScoreColor(sentimentData.score)}`}>
-                        {sentimentData.score.toFixed(2)}
-                    </span>
-                    <span className={`ml-2 text-xl ${getTrendColor(sentimentData.trend)}`}>
-                        {getTrendIcon(sentimentData.trend)}
-                    </span>
+            <div className="mb-2 rounded-lg bg-gradient-to-br from-black/60 to-black/30 shadow-md group p-3">
+                <div className="flex justify-between items-center mb-4">
+                    <div className="flex flex-col">
+                        <span className="text-sm font-semibold mb-2">Overall Sentiment</span>
+                        <span className={`text-xl font-bold ${getScoreColor(sentimentData.score)}`}>
+                            {getSentimentDescription(sentimentData.score)}
+                        </span>
+                    </div>
+                    <div className="flex items-center">
+                        <span className={`text-3xl font-bold ${getScoreColor(sentimentData.score)}`}>
+                            {sentimentData.score.toFixed(2)}
+                        </span>
+                        <span className={`ml-2 text-xl ${getTrendColor(sentimentData.trend)}`}>
+                            {getTrendIcon(sentimentData.trend)}
+                        </span>
+                    </div>
                 </div>
             </div>
-            
             {/* Sentiment Breakdown */}
-            <div className="mb-4 p-3 rounded-lg bg-gradient-to-br from-black/60 to-black/30 shadow-md group">
+            <div className="rounded-lg bg-gradient-to-br from-black/60 to-black/30 shadow-md group p-3">
                 <h2 className="text-sm font-semibold mb-2">Sentiment Breakdown</h2>
                 <div className="flex h-2 rounded-md overflow-hidden mb-2">
                     <div 
@@ -129,7 +158,6 @@ export default function Sentiment() {
                     </div>
                 </div>
             </div>
-            
         </div>
     );
 }

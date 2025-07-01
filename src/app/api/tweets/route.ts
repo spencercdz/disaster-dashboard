@@ -12,12 +12,29 @@ export async function GET(req: NextRequest) {
   if (query) {
     supabaseQuery = supabaseQuery.ilike('query', `%${query}%`);
   }
-  console.log('API /api/tweets: query =', query);
-  const { data, error } = await supabaseQuery;
-  console.log('API /api/tweets: returned', Array.isArray(data) ? data.length : 0, 'tweets');
-  if (error) {
-    console.error('API /api/tweets: error =', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  // Supabase limits to 1000 rows per request, so we batch fetch all rows
+  let allData: any[] = [];
+  let from = 0;
+  const batchSize = 1000;
+  let done = false;
+  while (!done) {
+    const { data, error } = await supabaseQuery.range(from, from + batchSize - 1);
+    if (error) {
+      console.error('API /api/tweets: error =', error);
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+    if (data && data.length > 0) {
+      allData = allData.concat(data);
+      if (data.length < batchSize) {
+        done = true;
+      } else {
+        from += batchSize;
+      }
+    } else {
+      done = true;
+    }
   }
-  return NextResponse.json(data, { status: 200 });
+  console.log('API /api/tweets: query =', query);
+  console.log('API /api/tweets: returned', allData.length, 'tweets');
+  return NextResponse.json(allData, { status: 200 });
 } 

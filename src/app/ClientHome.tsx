@@ -6,12 +6,39 @@ import Chart from "@/components/ContainerChart";
 import Map from "@/components/ContainerMap";
 import Sentiment from "@/components/ContainerSentiment";
 import ContainerTweets from "@/components/ContainerTweets";
-import Requests from "@/components/ContainerRequests";
-import { useState } from "react";
+import Requests from "@/components/ContainerIndicators";
+import { useState, useEffect } from "react";
 import { Tweet } from "./types/tweet";
 
 export default function ClientHome() {
   const [tweets, setTweets] = useState<Tweet[]>([]);
+  const [predictions, setPredictions] = useState<any[]>([]);
+  const [loadingPredictions, setLoadingPredictions] = useState(false);
+
+  useEffect(() => {
+    async function fetchPredictions() {
+      if (tweets.length === 0) {
+        setPredictions([]);
+        return;
+      }
+      setLoadingPredictions(true);
+      const tweetIds = tweets.map(t => t.tweet_id.toString());
+      const res = await fetch("/api/predictions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tweet_ids: tweetIds })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setPredictions(data);
+      } else {
+        setPredictions([]);
+      }
+      setLoadingPredictions(false);
+    }
+    fetchPredictions();
+  }, [tweets]);
+
   return (
     <div className="flex flex-col h-screen overflow-hidden">
       <div className="flex flex-col space-y-3">
@@ -24,10 +51,10 @@ export default function ClientHome() {
             <ContainerSearch onTweetsFetched={setTweets} />
           </div>
           <div className="flex-grow h-[30%]">
-            <Sentiment />
+            <Sentiment predictions={predictions} />
           </div>
           <div className="flex-grow h-[calc(70%-1rem)]">
-            <ContainerTweets tweets={tweets} />
+            <ContainerTweets tweets={tweets} predictions={predictions} />
           </div>
         </div>
         {/* Column 2: Map, Chart */}
@@ -36,13 +63,13 @@ export default function ClientHome() {
             <Map />
           </div>
           <div className="h-1/2">
-            <Chart />
+            <Chart predictions={predictions} tweets={tweets || []} />
           </div>
         </div>
         {/* Column 3: Requests */}
         <div className="flex flex-col w-1/3 h-full overflow-hidden">
           <div className="h-full">
-            <Requests />
+            <Requests predictions={predictions} />
           </div>
         </div>
       </div>

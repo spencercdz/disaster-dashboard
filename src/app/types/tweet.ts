@@ -1,11 +1,11 @@
 export interface Tweet {
-  tweet_id: number;
   query: string;
+  tweet_id: string;
   time: string;
   language: string;
   username: string;
-  verified: boolean;
-  followers: number;
+  verified: string;
+  followers: string;
   location: string;
   retweets: string;
   favorites: string;
