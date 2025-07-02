@@ -74,10 +74,10 @@ export default function ClientHome() {
           <div className="flex-none">
             <ContainerSearch onTweetsFetched={setTweets} onSearchStart={() => setLoading(true)} />
           </div>
-          <div className="flex-grow h-[30%]">
+          <div className="flex-none" style={{ minHeight: 0 }}>
             <Sentiment predictions={predictions} />
           </div>
-          <div className="flex-grow h-[calc(70%-1rem)]">
+          <div className="flex-grow min-h-0 flex flex-col">
             <ContainerTweets tweets={tweets} predictions={predictions} activeIndicatorFilters={activeIndicatorFilters} setActiveIndicatorFilters={setActiveIndicatorFilters} />
           </div>
         </div>

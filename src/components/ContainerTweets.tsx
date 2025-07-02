@@ -32,7 +32,7 @@ function getSentimentForTweet(tweetId: string, predictions: Prediction[]): numbe
 function getSentimentHoverColor(score: number | null) {
     if (score === null) return 'bg-gray-300';
     if (score >= 60) return 'bg-green-400';
-    if (score >= 40) return 'bg-yellow-400';
+    if (score >= 40) return 'bg-yellow-300';
     return 'bg-red-400';
 }
 

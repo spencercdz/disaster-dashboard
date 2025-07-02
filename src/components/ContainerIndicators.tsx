@@ -122,8 +122,8 @@ export default function ContainerIndicators({ predictions, activeIndicatorFilter
                 </div>
 
                 <div className="mb-2 w-full">
-                    <div className="flex flex-nowrap justify-between items-center gap-2 p-2 rounded-lg bg-gradient-to-br from-black/60 to-black/30 shadow-md">
-                        <div className="flex flex-nowrap gap-2">
+                    <div className="flex w-full mx-auto justify-center gap-2 p-2 rounded-lg bg-gradient-to-br from-black/60 to-black/30 shadow-md w-full overflow-x-auto min-w-0">
+                        <div className="flex flex-nowrap gap-2 min-w-0">
                             {CATEGORY_LIST.map(cat => {
                                 const enabled = enabledCategories.includes(cat);
                                 return (
@@ -136,7 +136,7 @@ export default function ContainerIndicators({ predictions, activeIndicatorFilter
                                                 setEnabledCategories([...enabledCategories, cat]);
                                             }
                                         }}
-                                        className={`flex-grow px-3 py-1.5 text-xs font-semibold rounded-md transition-all duration-200 ease-in-out whitespace-nowrap
+                                        className={`flex-grow px-2 py-1.5 text-xs font-semibold rounded-md transition-all duration-200 ease-in-out whitespace-nowrap
                                             ${enabled
                                                 ? `${cat === 'Sentiment' ? 'bg-blue-700' : cat === 'Damages' ? 'bg-orange-700' : cat === 'Elements' ? 'bg-indigo-700' : cat === 'Requests' ? 'bg-cyan-700' : 'bg-purple-700'} text-white shadow-md`
                                                 : 'bg-neutral-800/80 text-neutral-300 hover:bg-neutral-700/80'
@@ -152,7 +152,7 @@ export default function ContainerIndicators({ predictions, activeIndicatorFilter
                             <div className="h-4 border-l border-neutral-600"></div>
                             <button
                                 onClick={() => setEnabledCategories([...CATEGORY_LIST])}
-                                className="px-3 py-1.5 text-xs font-semibold rounded-md transition-all duration-200 ease-in-out bg-neutral-700 text-neutral-200 hover:bg-neutral-600"
+                                className="px-2 py-1.5 text-xs font-semibold rounded-md transition-all duration-200 ease-in-out bg-neutral-700 text-neutral-200 hover:bg-neutral-600"
                             >
                                 All
                             </button>
