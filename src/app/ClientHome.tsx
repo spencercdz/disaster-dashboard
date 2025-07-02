@@ -14,6 +14,7 @@ export default function ClientHome() {
   const [tweets, setTweets] = useState<Tweet[]>([]);
   const [predictions, setPredictions] = useState<Prediction[]>([]);
   const [loading, setLoading] = useState(false);
+  const [activeIndicatorFilters, setActiveIndicatorFilters] = useState<string[]>([]);
 
   useEffect(() => {
     async function fetchPredictions() {
@@ -77,7 +78,7 @@ export default function ClientHome() {
             <Sentiment predictions={predictions} />
           </div>
           <div className="flex-grow h-[calc(70%-1rem)]">
-            <ContainerTweets tweets={tweets} predictions={predictions} />
+            <ContainerTweets tweets={tweets} predictions={predictions} activeIndicatorFilters={activeIndicatorFilters} setActiveIndicatorFilters={setActiveIndicatorFilters} />
           </div>
         </div>
         {/* Column 2: Map, Chart */}
@@ -92,7 +93,7 @@ export default function ClientHome() {
         {/* Column 3: Requests */}
         <div className="flex flex-col w-1/3 h-full overflow-hidden">
           <div className="h-full">
-            <Requests predictions={predictions} />
+            <Requests predictions={predictions} activeIndicatorFilters={activeIndicatorFilters} setActiveIndicatorFilters={setActiveIndicatorFilters} />
           </div>
         </div>
       </div>

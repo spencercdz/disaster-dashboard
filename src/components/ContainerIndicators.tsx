@@ -12,171 +12,31 @@ import {
   Legend
 } from 'chart.js';
 import { Prediction } from '../app/types/prediction';
+import {
+  getIndicatorBreakdown,
+  INDICATOR_CATEGORY_MAP,
+  CATEGORY_LIST,
+  CategoryType,
+  getDisplayNameForIndicator,
+  getCategoryColor,
+  prepareBarChartData
+} from '../app/lib/analytics';
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
-interface ContainerRequestsProps {
+interface ContainerIndicatorsProps {
   predictions: Prediction[];
+  activeIndicatorFilters: string[];
+  setActiveIndicatorFilters: (filters: string[]) => void;
 }
 
-// CATEGORY AND DISPLAY NAME MAPPINGS
-const INDICATOR_CATEGORY_MAP: Record<string, 'Sentiment' | 'Damages' | 'Elements' | 'Requests' | 'Miscellaneous'> = {
-  sentiment_positive: 'Sentiment',
-  sentiment_neutral: 'Sentiment',
-  sentiment_negative: 'Sentiment',
-  request: 'Requests',
-  offer: 'Requests',
-  aid_related: 'Miscellaneous',
-  medical_help: 'Requests',
-  medical_products: 'Requests',
-  search_and_rescue: 'Miscellaneous',
-  security: 'Miscellaneous',
-  military: 'Miscellaneous',
-  child_alone: 'Damages',
-  water: 'Requests',
-  food: 'Requests',
-  shelter: 'Requests',
-  clothing: 'Requests',
-  money: 'Requests',
-  missing_people: 'Miscellaneous',
-  refugees: 'Miscellaneous',
-  death: 'Damages',
-  other_aid: 'Miscellaneous',
-  infrastructure_related: 'Damages',
-  transport: 'Damages',
-  buildings: 'Damages',
-  electricity: 'Damages',
-  tools: 'Requests',
-  hospitals: 'Damages',
-  shops: 'Damages',
-  aid_centers: 'Requests',
-  other_infrastructure: 'Damages',
-  weather_related: 'Elements',
-  floods: 'Elements',
-  storm: 'Elements',
-  fire: 'Elements',
-  earthquake: 'Elements',
-  cold: 'Elements',
-  other_weather: 'Elements',
-  direct_report: 'Miscellaneous',
-  genre_social: 'Miscellaneous',
-  genre_news: 'Miscellaneous',
-  genre_direct: 'Miscellaneous',
-  related: 'Miscellaneous'
-};
-
-const INDICATOR_DISPLAY_NAME_MAP: Record<string, string> = {
-  sentiment_positive: 'Positive',
-  sentiment_neutral: 'Neutral',
-  sentiment_negative: 'Negative',
-  genre_social: 'Social Media',
-  genre_news: 'News',
-  genre_direct: 'Direct Message',
-  request: 'General Request',
-  offer: 'General Offer',
-  aid_related: 'Aid Related',
-  medical_help: 'Medical Help',
-  medical_products: 'Medical Products',
-  search_and_rescue: 'Search and Rescue',
-  security: 'Security',
-  military: 'Military',
-  child_alone: 'Child Alone',
-  water: 'Water',
-  food: 'Food',
-  shelter: 'Shelter',
-  clothing: 'Clothing',
-  money: 'Money',
-  missing_people: 'Missing People',
-  refugees: 'Refugees',
-  death: 'Death',
-  other_aid: 'Other Aid',
-  infrastructure_related: 'Infrastructure',
-  transport: 'Transport',
-  buildings: 'Buildings',
-  electricity: 'Electricity',
-  tools: 'Tools',
-  hospitals: 'Hospitals',
-  shops: 'Shops',
-  aid_centers: 'Aid Centers',
-  other_infrastructure: 'Other Infrastructure',
-  weather_related: 'Weather Related',
-  floods: 'Floods',
-  storm: 'Storm',
-  fire: 'Fire',
-  earthquake: 'Earthquake',
-  cold: 'Cold',
-  other_weather: 'Other Weather',
-  direct_report: 'Direct Report',
-  related: 'Related'
-};
-
-// Color map for categories
-const CATEGORY_COLOR_MAP: Record<string, string> = {
-  Sentiment: 'text-blue-400',
-  Damages: 'text-red-400',
-  Elements: 'text-yellow-400',
-  Requests: 'text-green-400',
-  Miscellaneous: 'text-purple-400',
-};
-
-const CATEGORY_BAR_COLOR_MAP: Record<string, string> = {
-  Sentiment: 'rgba(96, 165, 250, 0.7)',
-  Damages: 'rgba(248, 113, 113, 0.7)',
-  Elements: 'rgba(251, 191, 36, 0.7)',
-  Requests: 'rgba(74, 222, 128, 0.7)',
-  Miscellaneous: 'rgba(192, 132, 252, 0.7)', // purple
-};
-
-// Category list for filter bar
-const CATEGORY_LIST = ['Sentiment', 'Damages', 'Elements', 'Requests', 'Miscellaneous'] as const;
-type CategoryType = typeof CATEGORY_LIST[number];
-
-export default function ContainerRequests({ predictions }: ContainerRequestsProps) {
+export default function ContainerIndicators({ predictions, activeIndicatorFilters, setActiveIndicatorFilters }: ContainerIndicatorsProps) {
     // Filter state: all categories enabled by default
     const [enabledCategories, setEnabledCategories] = useState<CategoryType[]>([...CATEGORY_LIST]);
 
     // Memoized computation of request/disaster/damage breakdown
-    const breakdown = useMemo(() => {
-        if (!predictions || predictions.length === 0) return {};
-        
-        // Initialize counts for all indicators from our map
-        const counts: Record<string, number> = {};
-        Object.keys(INDICATOR_CATEGORY_MAP).forEach(key => {
-            counts[key] = 0;
-        });
-
-        // Get the keys for binary indicators from the map
-        const binaryIndicatorKeys = Object.keys(INDICATOR_CATEGORY_MAP).filter(
-            key => !key.startsWith('sentiment_') && !key.startsWith('genre_')
-        );
-
-        predictions.forEach(p => {
-            // Tally binary indicators
-            binaryIndicatorKeys.forEach(key => {
-                if (p[key] === 'yes') {
-                    counts[key]++;
-                }
-            });
-
-            // Tally genre
-            if (p.genre === 'social') counts.genre_social++;
-            else if (p.genre === 'news') counts.genre_news++;
-            else if (p.genre === 'direct') counts.genre_direct++;
-
-            // Tally sentiment using numeric thresholds (like ContainerSentiment)
-            let s = 50;
-            if (typeof p.sentiment === 'string') {
-                const parsed = parseFloat(p.sentiment);
-                if (!isNaN(parsed)) s = parsed;
-            } else if (typeof p.sentiment === 'number') {
-                s = p.sentiment;
-            }
-            if (s >= 60) counts.sentiment_positive++;
-            else if (s >= 40) counts.sentiment_neutral++;
-            else counts.sentiment_negative++;
-        });
-
-        return counts;
-    }, [predictions]);
+    const indicatorKeys = Object.keys(INDICATOR_CATEGORY_MAP).filter(key => !key.startsWith('sentiment_') && !key.startsWith('genre_'));
+    const genreKeys = ['genre_social', 'genre_news', 'genre_direct'];
+    const breakdown = useMemo(() => getIndicatorBreakdown(predictions, indicatorKeys, genreKeys), [predictions]);
 
     // Filtering logic: only show indicators in enabled categories
     const filteredBreakdown = useMemo(() => {
@@ -210,16 +70,7 @@ export default function ContainerRequests({ predictions }: ContainerRequestsProp
     const safePage = Math.min(page, lastNonZeroPage);
     const pagedIndicators = sortedIndicators.slice(safePage * pageSize, (safePage + 1) * pageSize);
     // Bar chart: color each bar by category
-    const barData = {
-      labels: pagedIndicators.map(([k]) => INDICATOR_DISPLAY_NAME_MAP[k] || k.replace(/_/g, ' ')),
-      datasets: [
-        {
-          label: 'Count',
-          data: pagedIndicators.map(([, v]) => v),
-          backgroundColor: pagedIndicators.map(([k]) => CATEGORY_BAR_COLOR_MAP[INDICATOR_CATEGORY_MAP[k] || 'Miscellaneous']),
-        },
-      ],
-    };
+    const barData = prepareBarChartData(pagedIndicators);
     const barOptions = {
       responsive: true,
       plugins: {
@@ -244,20 +95,26 @@ export default function ContainerRequests({ predictions }: ContainerRequestsProp
                         <span className="text-md font-semibold">Overview</span>
                         <div className="flex space-x-2">
                             <button
-                                className="px-2 py-1 rounded bg-gray-700 text-white disabled:opacity-50"
+                                className="w-8 h-8 flex items-center justify-center rounded-full bg-neutral-800 text-white border border-neutral-500 hover:bg-neutral-600 hover:text-white shadow transition-colors duration-150 focus:outline-none disabled:opacity-50"
                                 onClick={() => setPage(p => Math.max(0, p - 1))}
                                 disabled={safePage === 0}
                                 aria-label="Previous"
+                                title="Previous"
                             >
-                                &#8592;
+                                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M12.5 15L8 10L12.5 5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
                             </button>
                             <button
-                                className="px-2 py-1 rounded bg-gray-700 text-white disabled:opacity-50"
+                                className="w-8 h-8 flex items-center justify-center rounded-full bg-neutral-800 text-white border border-neutral-500 hover:bg-neutral-600 hover:text-white shadow transition-colors duration-150 focus:outline-none disabled:opacity-50"
                                 onClick={() => setPage(p => Math.min(lastNonZeroPage, p + 1))}
                                 disabled={safePage >= lastNonZeroPage}
                                 aria-label="Next"
+                                title="Next"
                             >
-                                &#8594;
+                                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M8 5L12.5 10L8 15" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
                             </button>
                         </div>
                     </div>
@@ -269,13 +126,6 @@ export default function ContainerRequests({ predictions }: ContainerRequestsProp
                         <div className="flex flex-nowrap gap-2">
                             {CATEGORY_LIST.map(cat => {
                                 const enabled = enabledCategories.includes(cat);
-                                const categoryColors = {
-                                    Sentiment: 'bg-blue-500',
-                                    Damages: 'bg-red-500',
-                                    Elements: 'bg-yellow-500',
-                                    Requests: 'bg-green-500',
-                                    Miscellaneous: 'bg-purple-500',
-                                };
                                 return (
                                     <button
                                         key={cat}
@@ -288,7 +138,7 @@ export default function ContainerRequests({ predictions }: ContainerRequestsProp
                                         }}
                                         className={`flex-grow px-3 py-1.5 text-xs font-semibold rounded-md transition-all duration-200 ease-in-out whitespace-nowrap
                                             ${enabled
-                                                ? `${categoryColors[cat]} text-white shadow-md`
+                                                ? `${cat === 'Sentiment' ? 'bg-blue-700' : cat === 'Damages' ? 'bg-orange-700' : cat === 'Elements' ? 'bg-indigo-700' : cat === 'Requests' ? 'bg-cyan-700' : 'bg-purple-700'} text-white shadow-md`
                                                 : 'bg-neutral-800/80 text-neutral-300 hover:bg-neutral-700/80'
                                             }
                                         `}
@@ -327,12 +177,38 @@ export default function ContainerRequests({ predictions }: ContainerRequestsProp
                             </thead>
                             <tbody>
                                 {sortedIndicators.map(([k, v]) => {
-                                  const category = INDICATOR_CATEGORY_MAP[k] || 'Miscellaneous';
-                                  const displayName = INDICATOR_DISPLAY_NAME_MAP[k] || k.replace(/_/g, ' ');
-                                  const colorClass = CATEGORY_COLOR_MAP[category];
+                                  const displayName = getDisplayNameForIndicator(k);
+                                  const isActive = activeIndicatorFilters.includes(k);
                                   return (
                                     <tr key={k} className="hover:bg-neutral-800 border-b border-neutral-800 transition-colors">
-                                        <td className={`py-1 px-2 capitalize font-semibold ${colorClass}`}>{displayName}</td>
+                                        <td className={`py-1 px-2 capitalize font-semibold flex items-center gap-2`}>
+                                            <span className={`${getCategoryColor(k)} font-semibold`}>{displayName}</span>
+                                            <button
+                                                className={`w-4 h-4 flex items-center justify-center rounded-full border shadow transition-colors duration-150 focus:outline-none
+                                                    ${isActive ? 'bg-neutral-600 text-white border-neutral-400' : 'bg-neutral-800 text-white border-neutral-500 hover:bg-neutral-600 hover:text-white hover:border-neutral-400'}
+                                                `}
+                                                onClick={() => {
+                                                    if (isActive) {
+                                                        setActiveIndicatorFilters(activeIndicatorFilters.filter(f => f !== k));
+                                                    } else {
+                                                        setActiveIndicatorFilters([...activeIndicatorFilters, k]);
+                                                    }
+                                                }}
+                                                title={isActive ? 'Remove filter' : 'Add filter'}
+                                                aria-label={isActive ? 'Remove filter' : 'Add filter'}
+                                            >
+                                                {isActive ? (
+                                                    <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                        <rect x="2" y="4.25" width="6" height="1.5" rx="0.75" fill="white" />
+                                                    </svg>
+                                                ) : (
+                                                    <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                        <rect x="2" y="4.25" width="6" height="1.5" rx="0.75" fill="white" />
+                                                        <rect x="4.25" y="2" width="1.5" height="6" rx="0.75" fill="white" />
+                                                    </svg>
+                                                )}
+                                            </button>
+                                        </td>
                                         <td className="text-right py-1 px-2 font-mono">{v}</td>
                                     </tr>
                                   );

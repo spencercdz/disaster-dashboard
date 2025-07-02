@@ -15,6 +15,7 @@ import {
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
 import { Prediction } from '../app/types/prediction';
+import { getPerDaySentiment, prepareLineChartData } from '../app/lib/analytics';
 
 // Register ChartJS components
 ChartJS.register(
@@ -42,49 +43,7 @@ export default function ContainerChart({ predictions, tweets }: ContainerChartPr
   }, [tweets]);
 
   // Memoized computation of per-day sentiment analytics
-  const sentimentData = useMemo(() => {
-    if (!predictions || predictions.length === 0) return [];
-    // Group by date (YYYY-MM-DD) using tweet time from tweets table
-    const byDate: Record<string, Prediction[]> = {};
-    predictions.forEach(p => {
-      const tweetTime = tweetTimeMap[p.tweet_id];
-      if (!tweetTime || typeof tweetTime !== 'string') return;
-      // Use only the date part (YYYY-MM-DD)
-      let date = tweetTime.split('T')[0];
-      if (!date || date.length !== 10) {
-        // Try custom format: 2025-03-28_06-57-53
-        const match = tweetTime.match(/(\d{4})-(\d{2})-(\d{2})/);
-        if (match) date = `${match[1]}-${match[2]}-${match[3]}`;
-        else date = 'unknown';
-      }
-      // Convert sentiment to number
-      const sentiment = typeof p.sentiment === 'string' ? parseFloat(p.sentiment) : p.sentiment;
-      if (!byDate[date]) byDate[date] = [];
-      byDate[date].push({ ...p, sentiment });
-    });
-    // For each day, compute the average sentiment and breakdown
-    return Object.entries(byDate)
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([date, preds]) => {
-        const total = preds.length;
-        const sum = preds.reduce((acc, p) => acc + (typeof p.sentiment === 'number' ? p.sentiment : 50), 0);
-        const overall = sum / total;
-        let positive = 0, neutral = 0, negative = 0;
-        preds.forEach(p => {
-          const s = typeof p.sentiment === 'string' ? parseFloat(p.sentiment) : p.sentiment;
-          if (s >= 60) positive++;
-          else if (s >= 40) neutral++;
-          else negative++;
-        });
-        return {
-          date,
-          positive: Math.round((positive / total) * 100),
-          neutral: Math.round((neutral / total) * 100),
-          negative: Math.round((negative / total) * 100),
-          overall,
-        };
-      });
-  }, [predictions, tweetTimeMap]);
+  const sentimentData = useMemo(() => getPerDaySentiment(predictions, tweetTimeMap), [predictions, tweetTimeMap]);
 
   // State for chart type
   const [chartType, setChartType] = useState<'sentiment' | 'breakdown'>('breakdown');
@@ -146,50 +105,10 @@ export default function ContainerChart({ predictions, tweets }: ContainerChartPr
   };
 
   // Prepare data for sentiment chart
-  const sentimentChartData = {
-    labels: sentimentData.map(d => d.date),
-    datasets: [
-      {
-        label: 'Overall Sentiment',
-        data: sentimentData.map(d => d.overall),
-        borderColor: 'rgb(75, 192, 192)',
-        backgroundColor: 'rgba(75, 192, 192, 0.5)',
-        tension: 0.3,
-        fill: false,
-      },
-    ],
-  };
+  const sentimentChartData = prepareLineChartData(sentimentData, 'sentiment');
 
   // Prepare data for sentiment breakdown chart
-  const breakdownChartData = {
-    labels: sentimentData.map(d => d.date),
-    datasets: [
-      {
-        label: 'Positive',
-        data: sentimentData.map(d => d.positive),
-        borderColor: 'rgb(75, 192, 192)',
-        backgroundColor: 'rgba(75, 192, 192, 0.5)',
-        tension: 0.3,
-        fill: true,
-      },
-      {
-        label: 'Neutral',
-        data: sentimentData.map(d => d.neutral),
-        borderColor: 'rgb(54, 162, 235)',
-        backgroundColor: 'rgba(54, 162, 235, 0.5)',
-        tension: 0.3,
-        fill: true,
-      },
-      {
-        label: 'Negative',
-        data: sentimentData.map(d => d.negative),
-        borderColor: 'rgb(255, 99, 132)',
-        backgroundColor: 'rgba(255, 99, 132, 0.5)',
-        tension: 0.3,
-        fill: true,
-      },
-    ],
-  };
+  const breakdownChartData = prepareLineChartData(sentimentData, 'breakdown');
 
   return (
     <div className="flex container-default flex-col h-full">
