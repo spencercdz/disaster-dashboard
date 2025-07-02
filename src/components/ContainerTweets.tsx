@@ -60,6 +60,20 @@ function getSentimentHoverColor(score: number | null) {
     return 'bg-red-400';
 }
 
+function getSentimentText(score: number | null) {
+    if (score === null) return 'Neutral';
+    if (score >= 60) return 'Positive';
+    if (score >= 40) return 'Neutral';
+    return 'Negative';
+}
+
+function getSentimentTextColor(score: number | null) {
+    if (score === null) return 'text-gray-400';
+    if (score >= 60) return 'text-green-400';
+    if (score >= 40) return 'text-yellow-400';
+    return 'text-red-400';
+}
+
 export default function ContainerTweets({ tweets, predictions = [] }: TweetsProps) {
     const [sortType, setSortType] = useState<'recent' | 'popular'>('recent');
 
@@ -90,7 +104,7 @@ export default function ContainerTweets({ tweets, predictions = [] }: TweetsProp
                     </select>
                 </div>
             </div>
-            <div className="flex-1 overflow-y-auto space-y-3 pr-1">
+            <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden space-y-3 pr-1">
                 {sortedTweets.length === 0 ? (
                     <div className="text-gray-400">No tweets found for this query.</div>
                 ) : (
@@ -116,7 +130,7 @@ export default function ContainerTweets({ tweets, predictions = [] }: TweetsProp
                                         <span className="text-gray-400 text-xs">{formatTimestamp(tweet.time)}</span>
                                     </div>
                                     {/* Tweet Content */}
-                                    <p className="mb-2 text-base leading-snug">
+                                    <p className="mb-2 text-base leading-snug break-words">
                                         {removeLinks(tweet.text)}
                                     </p>
                                     {/* Tweet Location (if available) */}
@@ -127,16 +141,20 @@ export default function ContainerTweets({ tweets, predictions = [] }: TweetsProp
                                         </div>
                                     )}
                                     {/* Tweet Metrics */}
-                                    <div className="flex flex-wrap gap-4 text-xs text-gray-400 pt-2 border-t border-gray-700 items-center">
-                                        <span>Retweets: {tweet.retweets}</span>
-                                        <span>Favorites: {tweet.favorites}</span>
-                                        <span>Replies: {tweet.replies}</span>
-                                        <span>Followers: {tweet.followers}</span>
+                                    <div className="flex flex-wrap gap-4 text-xs text-gray-400 pt-2 border-t border-gray-700 items-center justify-between">
+                                        <div className="flex flex-wrap gap-4">
+                                            <span>Retweets: {tweet.retweets}</span>
+                                            <span>Favorites: {tweet.favorites}</span>
+                                            <span>Replies: {tweet.replies}</span>
+                                            <span>Followers: {tweet.followers}</span>
+                                        </div>
+                                        <div className="flex flex-wrap gap-4">
                                         {sentimentScore !== null && (
-                                            <span className="ml-2 px-2 py-1 rounded text-xs font-bold" style={{ background: 'rgba(0,0,0,0.2)' }}>
-                                                Sentiment: {sentimentScore.toFixed(1)}
+                                            <span className={`ml-2 px-2 py-1 rounded text-xs font-bold ${getSentimentTextColor(sentimentScore)}`} style={{ background: 'rgba(255, 255, 255, 0)' }}>
+                                                {getSentimentText(sentimentScore)} Sentiment
                                             </span>
                                         )}
+                                        </div>
                                         <a
                                             href={getTweetUrl(tweet)}
                                             target="_blank"
