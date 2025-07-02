@@ -12,7 +12,7 @@ export default function Header() {
                 <MenuItem title="Reports" address="/" Icon={AiFillFilePdf}/>
             </div>
             <div className="flex gap-1 items-center">
-                <span className="text-2xl font-bold py-1 px-2 rounded-lg">SENTIMENT MONITORING</span>
+                <span className="text-2xl font-bold py-1 px-2 rounded-lg">SENTIMENT MONITORING DASHBOARD</span>
             </div>
         </div>
     );

@@ -19,42 +19,115 @@ interface ContainerRequestsProps {
 }
 
 // CATEGORY AND DISPLAY NAME MAPPINGS
-const INDICATOR_CATEGORY_MAP: Record<string, 'Sentiment' | 'Damages' | 'Elements' | 'Requests' | 'Misc'> = {
-  // Example mappings, extend as needed
+const INDICATOR_CATEGORY_MAP: Record<string, 'Sentiment' | 'Damages' | 'Elements' | 'Requests' | 'Miscellaneous'> = {
+  sentiment_positive: 'Sentiment',
+  sentiment_neutral: 'Sentiment',
+  sentiment_negative: 'Sentiment',
+  request: 'Requests',
+  offer: 'Requests',
+  aid_related: 'Miscellaneous',
+  medical_help: 'Requests',
+  medical_products: 'Requests',
+  search_and_rescue: 'Miscellaneous',
+  security: 'Miscellaneous',
+  military: 'Miscellaneous',
+  child_alone: 'Damages',
   water: 'Requests',
+  food: 'Requests',
+  shelter: 'Requests',
+  clothing: 'Requests',
   money: 'Requests',
-  injury: 'Damages',
+  missing_people: 'Miscellaneous',
+  refugees: 'Miscellaneous',
+  death: 'Damages',
+  other_aid: 'Miscellaneous',
+  infrastructure_related: 'Damages',
+  transport: 'Damages',
+  buildings: 'Damages',
+  electricity: 'Damages',
+  tools: 'Requests',
+  hospitals: 'Damages',
+  shops: 'Damages',
+  aid_centers: 'Requests',
+  other_infrastructure: 'Damages',
+  weather_related: 'Elements',
+  floods: 'Elements',
+  storm: 'Elements',
   fire: 'Elements',
-  sentiment: 'Sentiment',
+  earthquake: 'Elements',
+  cold: 'Elements',
+  other_weather: 'Elements',
+  direct_report: 'Miscellaneous',
+  genre_social: 'Miscellaneous',
+  genre_news: 'Miscellaneous',
+  genre_direct: 'Miscellaneous',
+  related: 'Miscellaneous'
 };
 
 const INDICATOR_DISPLAY_NAME_MAP: Record<string, string> = {
-  water: 'Water Needed',
+  sentiment_positive: 'Positive',
+  sentiment_neutral: 'Neutral',
+  sentiment_negative: 'Negative',
+  genre_social: 'Social Media',
+  genre_news: 'News',
+  genre_direct: 'Direct Message',
+  request: 'General Request',
+  offer: 'General Offer',
+  aid_related: 'Aid Related',
+  medical_help: 'Medical Help',
+  medical_products: 'Medical Products',
+  search_and_rescue: 'Search and Rescue',
+  security: 'Security',
+  military: 'Military',
+  child_alone: 'Child Alone',
+  water: 'Water',
+  food: 'Food',
+  shelter: 'Shelter',
+  clothing: 'Clothing',
   money: 'Money',
-  injury: 'Injury',
+  missing_people: 'Missing People',
+  refugees: 'Refugees',
+  death: 'Death',
+  other_aid: 'Other Aid',
+  infrastructure_related: 'Infrastructure',
+  transport: 'Transport',
+  buildings: 'Buildings',
+  electricity: 'Electricity',
+  tools: 'Tools',
+  hospitals: 'Hospitals',
+  shops: 'Shops',
+  aid_centers: 'Aid Centers',
+  other_infrastructure: 'Other Infrastructure',
+  weather_related: 'Weather Related',
+  floods: 'Floods',
+  storm: 'Storm',
   fire: 'Fire',
-  sentiment: 'Overall Sentiment',
+  earthquake: 'Earthquake',
+  cold: 'Cold',
+  other_weather: 'Other Weather',
+  direct_report: 'Direct Report',
+  related: 'Related'
 };
 
 // Color map for categories
 const CATEGORY_COLOR_MAP: Record<string, string> = {
-  Sentiment: 'text-yellow-400',
+  Sentiment: 'text-blue-400',
   Damages: 'text-red-400',
-  Elements: 'text-blue-400',
+  Elements: 'text-yellow-400',
   Requests: 'text-green-400',
-  Misc: 'text-gray-400',
+  Miscellaneous: 'text-purple-400',
 };
 
 const CATEGORY_BAR_COLOR_MAP: Record<string, string> = {
-  Sentiment: 'rgba(251, 191, 36, 0.7)', // yellow
-  Damages: 'rgba(248, 113, 113, 0.7)', // red
-  Elements: 'rgba(96, 165, 250, 0.7)', // blue
-  Requests: 'rgba(74, 222, 128, 0.7)', // green
-  Misc: 'rgba(156, 163, 175, 0.7)', // gray
+  Sentiment: 'rgba(96, 165, 250, 0.7)',
+  Damages: 'rgba(248, 113, 113, 0.7)',
+  Elements: 'rgba(251, 191, 36, 0.7)',
+  Requests: 'rgba(74, 222, 128, 0.7)',
+  Miscellaneous: 'rgba(192, 132, 252, 0.7)', // purple
 };
 
 // Category list for filter bar
-const CATEGORY_LIST = ['Sentiment', 'Damages', 'Elements', 'Requests', 'Misc'] as const;
+const CATEGORY_LIST = ['Sentiment', 'Damages', 'Elements', 'Requests', 'Miscellaneous'] as const;
 type CategoryType = typeof CATEGORY_LIST[number];
 
 export default function ContainerRequests({ predictions }: ContainerRequestsProps) {
@@ -64,16 +137,44 @@ export default function ContainerRequests({ predictions }: ContainerRequestsProp
     // Memoized computation of request/disaster/damage breakdown
     const breakdown = useMemo(() => {
         if (!predictions || predictions.length === 0) return {};
-        // Exclude non-indicator fields and all confidence fields
-        const exclude = ['tweet_id', 'sentiment', 'verified', 'username', 'date', 'retweets', 'tweet'];
-        const keys = Object.keys(predictions[0]).filter(k => !exclude.includes(k) && !k.endsWith('_confidence'));
+        
+        // Initialize counts for all indicators from our map
         const counts: Record<string, number> = {};
-        keys.forEach(key => { counts[key] = 0; });
-        predictions.forEach(p => {
-            keys.forEach(key => {
-                if (p[key] === 'yes') counts[key]++;
-            });
+        Object.keys(INDICATOR_CATEGORY_MAP).forEach(key => {
+            counts[key] = 0;
         });
+
+        // Get the keys for binary indicators from the map
+        const binaryIndicatorKeys = Object.keys(INDICATOR_CATEGORY_MAP).filter(
+            key => !key.startsWith('sentiment_') && !key.startsWith('genre_')
+        );
+
+        predictions.forEach(p => {
+            // Tally binary indicators
+            binaryIndicatorKeys.forEach(key => {
+                if (p[key] === 'yes') {
+                    counts[key]++;
+                }
+            });
+
+            // Tally genre
+            if (p.genre === 'social') counts.genre_social++;
+            else if (p.genre === 'news') counts.genre_news++;
+            else if (p.genre === 'direct') counts.genre_direct++;
+
+            // Tally sentiment using numeric thresholds (like ContainerSentiment)
+            let s = 50;
+            if (typeof p.sentiment === 'string') {
+                const parsed = parseFloat(p.sentiment);
+                if (!isNaN(parsed)) s = parsed;
+            } else if (typeof p.sentiment === 'number') {
+                s = p.sentiment;
+            }
+            if (s >= 60) counts.sentiment_positive++;
+            else if (s >= 40) counts.sentiment_neutral++;
+            else counts.sentiment_negative++;
+        });
+
         return counts;
     }, [predictions]);
 
@@ -81,7 +182,7 @@ export default function ContainerRequests({ predictions }: ContainerRequestsProp
     const filteredBreakdown = useMemo(() => {
         return Object.fromEntries(
             Object.entries(breakdown).filter(([k]) => {
-                const cat = INDICATOR_CATEGORY_MAP[k] || 'Misc';
+                const cat = INDICATOR_CATEGORY_MAP[k] || 'Miscellaneous';
                 return enabledCategories.includes(cat as CategoryType);
             })
         );
@@ -115,7 +216,7 @@ export default function ContainerRequests({ predictions }: ContainerRequestsProp
         {
           label: 'Count',
           data: pagedIndicators.map(([, v]) => v),
-          backgroundColor: pagedIndicators.map(([k]) => CATEGORY_BAR_COLOR_MAP[INDICATOR_CATEGORY_MAP[k] || 'Misc']),
+          backgroundColor: pagedIndicators.map(([k]) => CATEGORY_BAR_COLOR_MAP[INDICATOR_CATEGORY_MAP[k] || 'Miscellaneous']),
         },
       ],
     };
@@ -137,47 +238,10 @@ export default function ContainerRequests({ predictions }: ContainerRequestsProp
                 <h1 className="text-1xl font-bold mb-2">Indicator Breakdown</h1>
             </div>
             <div className="flex-1 flex flex-col space-y-3 pr-1 overflow-hidden">
-                <div className="mb-2 flex justify-center w-full">
-                    <div className="w-full max-w-2xl mx-auto flex flex-wrap justify-center gap-2 items-center bg-gradient-to-br from-black/60 to-black/30 rounded-lg shadow-md border border-neutral-800 py-2 px-3">
-                        {CATEGORY_LIST.map(cat => {
-                            const enabled = enabledCategories.includes(cat);
-                            // Translucent pill bg per category
-                            const pillBg = enabled
-                                ? {
-                                    Sentiment: 'bg-yellow-400/20 border-yellow-400/40',
-                                    Damages: 'bg-red-400/20 border-red-400/40',
-                                    Elements: 'bg-blue-400/20 border-blue-400/40',
-                                    Requests: 'bg-green-400/20 border-green-400/40',
-                                    Misc: 'bg-gray-400/20 border-gray-400/40',
-                                  }[cat]
-                                : 'bg-neutral-800 border-neutral-700 opacity-50';
-                            return (
-                                <span
-                                    key={cat}
-                                    className={`flex items-center px-3 py-1 rounded-full font-semibold text-xs cursor-pointer select-none border transition-all
-                                        ${CATEGORY_COLOR_MAP[cat]} ${pillBg}
-                                        ${enabled ? 'hover:bg-white/30 hover:scale-105' : 'hover:opacity-80'}
-                                    `}
-                                    onClick={() => {
-                                        if (enabled) {
-                                            setEnabledCategories(enabledCategories.filter(c => c !== cat));
-                                        } else {
-                                            setEnabledCategories([...enabledCategories, cat]);
-                                        }
-                                    }}
-                                >
-                                    {cat}
-                                    {enabled && (
-                                        <span className="ml-2 text-xs font-bold text-gray-300 hover:text-red-400" onClick={e => { e.stopPropagation(); setEnabledCategories(enabledCategories.filter(c => c !== cat)); }}>&times;</span>
-                                    )}
-                                </span>
-                            );
-                        })}
-                    </div>
-                </div>
+
                 <div className="mb-2 rounded-lg bg-gradient-to-br from-black/60 to-black/30 shadow-md group p-3">
                     <div className="flex justify-between items-center mb-2">
-                        <span className="text-md font-semibold">Indicator Chart</span>
+                        <span className="text-md font-semibold">Overview</span>
                         <div className="flex space-x-2">
                             <button
                                 className="px-2 py-1 rounded bg-gray-700 text-white disabled:opacity-50"
@@ -199,6 +263,59 @@ export default function ContainerRequests({ predictions }: ContainerRequestsProp
                     </div>
                     <Bar data={barData} options={barOptions} />
                 </div>
+
+                <div className="mb-2 w-full">
+                    <div className="flex flex-nowrap justify-between items-center gap-2 p-2 rounded-lg bg-gradient-to-br from-black/60 to-black/30 shadow-md">
+                        <div className="flex flex-nowrap gap-2">
+                            {CATEGORY_LIST.map(cat => {
+                                const enabled = enabledCategories.includes(cat);
+                                const categoryColors = {
+                                    Sentiment: 'bg-blue-500',
+                                    Damages: 'bg-red-500',
+                                    Elements: 'bg-yellow-500',
+                                    Requests: 'bg-green-500',
+                                    Miscellaneous: 'bg-purple-500',
+                                };
+                                return (
+                                    <button
+                                        key={cat}
+                                        onClick={() => {
+                                            if (enabled) {
+                                                setEnabledCategories(enabledCategories.filter(c => c !== cat));
+                                            } else {
+                                                setEnabledCategories([...enabledCategories, cat]);
+                                            }
+                                        }}
+                                        className={`flex-grow px-3 py-1.5 text-xs font-semibold rounded-md transition-all duration-200 ease-in-out whitespace-nowrap
+                                            ${enabled
+                                                ? `${categoryColors[cat]} text-white shadow-md`
+                                                : 'bg-neutral-800/80 text-neutral-300 hover:bg-neutral-700/80'
+                                            }
+                                        `}
+                                    >
+                                        {cat}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                        <div className="flex-none flex items-center gap-2">
+                            <div className="h-4 border-l border-neutral-600"></div>
+                            <button
+                                onClick={() => setEnabledCategories([...CATEGORY_LIST])}
+                                className="px-3 py-1.5 text-xs font-semibold rounded-md transition-all duration-200 ease-in-out bg-neutral-700 text-neutral-200 hover:bg-neutral-600"
+                            >
+                                All
+                            </button>
+                            <button
+                                onClick={() => setEnabledCategories([])}
+                                className="px-3 py-1.5 text-xs font-semibold rounded-md transition-all duration-200 ease-in-out bg-neutral-700 text-neutral-200 hover:bg-neutral-600"
+                            >
+                                None
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
                 <div className="flex-1 flex flex-col rounded-lg bg-gradient-to-br from-black/60 to-black/30 shadow-md group p-3 min-h-0">
                     <div className="flex-1 overflow-y-auto min-h-0">
                         <table className="w-full text-sm text-gray-300">
@@ -210,7 +327,7 @@ export default function ContainerRequests({ predictions }: ContainerRequestsProp
                             </thead>
                             <tbody>
                                 {sortedIndicators.map(([k, v]) => {
-                                  const category = INDICATOR_CATEGORY_MAP[k] || 'Misc';
+                                  const category = INDICATOR_CATEGORY_MAP[k] || 'Miscellaneous';
                                   const displayName = INDICATOR_DISPLAY_NAME_MAP[k] || k.replace(/_/g, ' ');
                                   const colorClass = CATEGORY_COLOR_MAP[category];
                                   return (
