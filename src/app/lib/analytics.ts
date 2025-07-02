@@ -162,7 +162,7 @@ export function sentimentText(score: number | null): string {
 export function sentimentColor(score: number | null): string {
   if (score === null) return 'bg-gray-400';
   if (score >= 60) return 'bg-green-500';
-  if (score >= 40) return 'bg-yellow-400';
+  if (score >= 40) return 'bg-yellow-300';
   return 'bg-red-500';
 }
 
@@ -170,7 +170,7 @@ export function sentimentColor(score: number | null): string {
 export function sentimentTextColor(score: number | null): string {
   if (score === null) return 'text-gray-400';
   if (score >= 60) return 'text-green-400';
-  if (score >= 40) return 'text-yellow-400';
+  if (score >= 40) return 'text-yellow-300';
   return 'text-red-400';
 }
 
@@ -289,7 +289,7 @@ export const CATEGORY_COLOR_MAP: Record<string, string> = {
 export function getCategoryColor(categoryOrKey: string): string {
   // Sentiment indicators
   if (categoryOrKey === 'sentiment_positive') return 'text-green-400';
-  if (categoryOrKey === 'sentiment_neutral') return 'text-yellow-400';
+  if (categoryOrKey === 'sentiment_neutral') return 'text-yellow-300';
   if (categoryOrKey === 'sentiment_negative') return 'text-red-400';
   // Damages
   if ([

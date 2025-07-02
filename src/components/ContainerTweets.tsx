@@ -195,29 +195,29 @@ export default function ContainerTweets({ tweets, predictions = [], activeIndica
                                         <span className="text-gray-400 text-xs">{formatTimestamp(tweet.time)}</span>
                                     </div>
                                     {/* Tweet Content */}
-                                    <p className="mb-2 text-base leading-snug break-words overflow-hidden w-full">
-                                        {(() => {
-                                            const text = removeLinks(tweet.text);
-                                            const isLong = text.length > 140;
-                                            const isExpanded = expanded[tweet.tweet_id];
-                                            if (!isLong) return text;
-                                            if (isExpanded) {
-                                                return <>
-                                                    {text}
-                                                    <div className="flex justify-center mt-1">
-                                                        <button className="text-blue-400 hover:underline" onClick={() => setExpanded(e => ({ ...e, [tweet.tweet_id]: false }))}>Minimize</button>
-                                                    </div>
-                                                </>;
-                                            } else {
-                                                return <>
-                                                    {text.slice(0, 140)}...
-                                                    <div className="flex justify-center mt-1">
-                                                        <button className="text-blue-400 hover:underline" onClick={() => setExpanded(e => ({ ...e, [tweet.tweet_id]: true }))}>Expand</button>
-                                                    </div>
-                                                </>;
-                                            }
-                                        })()}
-                                    </p>
+                                    {(() => {
+                                        const text = removeLinks(tweet.text);
+                                        const isLong = text.length > 140;
+                                        const isExpanded = expanded[tweet.tweet_id];
+                                        if (!isLong) {
+                                            return <p className="mb-2 text-base leading-snug break-words overflow-hidden w-full">{text}</p>;
+                                        }
+                                        if (isExpanded) {
+                                            return <>
+                                                <p className="mb-2 text-base leading-snug break-words overflow-hidden w-full">{text}</p>
+                                                <div className="flex justify-center mt-1">
+                                                    <button className="text-blue-400 hover:underline" onClick={() => setExpanded(e => ({ ...e, [tweet.tweet_id]: false }))}>Minimize</button>
+                                                </div>
+                                            </>;
+                                        } else {
+                                            return <>
+                                                <p className="mb-2 text-base leading-snug break-words overflow-hidden w-full">{text.slice(0, 140)}...</p>
+                                                <div className="flex justify-center mt-1">
+                                                    <button className="text-blue-400 hover:underline" onClick={() => setExpanded(e => ({ ...e, [tweet.tweet_id]: true }))}>Expand</button>
+                                                </div>
+                                            </>;
+                                        }
+                                    })()}
                                     {/* Tweet Location (if available) */}
                                     {tweet.location && tweet.location !== 'EMPTY' && (
                                         <div className="flex items-center text-xs text-gray-400 mb-2">

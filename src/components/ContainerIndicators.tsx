@@ -86,13 +86,13 @@ export default function ContainerIndicators({ predictions, activeIndicatorFilter
     return (
         <div className="flex container-default flex-col h-full">
             <div className="mb-2 flex justify-between items-center">
-                <h1 className="text-1xl font-bold mb-2">Indicator Breakdown</h1>
+                <h1 className="text-1xl font-bold mb-2">Indicator Analytics</h1>
             </div>
             <div className="flex-1 flex flex-col space-y-3 pr-1 overflow-hidden">
 
                 <div className="mb-2 rounded-lg bg-gradient-to-br from-black/60 to-black/30 shadow-md group p-3">
                     <div className="flex justify-between items-center mb-2">
-                        <span className="text-md font-semibold">Overview</span>
+                        <span className="text-md font-semibold">Count Overview</span>
                         <div className="flex space-x-2">
                             <button
                                 className="w-8 h-8 flex items-center justify-center rounded-full bg-neutral-800 text-white border border-neutral-500 hover:bg-neutral-600 hover:text-white shadow transition-colors duration-150 focus:outline-none disabled:opacity-50"

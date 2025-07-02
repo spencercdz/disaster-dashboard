@@ -42,7 +42,7 @@ export default function ContainerSentiment({ predictions }: ContainerSentimentPr
                         style={{ width: `${sentimentData.breakdown.positive}%` }}
                     />
                     <div 
-                        className="bg-yellow-400" 
+                        className="bg-yellow-300" 
                         style={{ width: `${sentimentData.breakdown.neutral}%` }}
                     />
                     <div 
@@ -56,7 +56,7 @@ export default function ContainerSentiment({ predictions }: ContainerSentimentPr
                         <span>Positive: {sentimentData.breakdown.positive}%</span>
                     </div>
                     <div className="flex items-center">
-                        <div className="w-2 h-2 bg-yellow-400 rounded-full mr-1" />
+                        <div className="w-2 h-2 bg-yellow-300 rounded-full mr-1" />
                         <span>Neutral: {sentimentData.breakdown.neutral}%</span>
                     </div>
                     <div className="flex items-center">
