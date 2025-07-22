@@ -52,7 +52,7 @@ Before you start, make sure you have:
 Open your terminal (Command Prompt, PowerShell, or Terminal on Mac/Linux) and run:
 
 ```bash
-git clone https://github.com/your-username/disaster-dashboard.git
+git clone https://github.com/spencercdz/disaster-dashboard.git
 cd disaster-dashboard
 ```
 
