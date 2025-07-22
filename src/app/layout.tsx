@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "OPERA Dashboard",
-  description: "For Human Assistance and Disaster Response",
+  title: "OPERA",
+  description: "Humanitarian Assistance and Disaster Response",
 };
 
 export default function RootLayout({
